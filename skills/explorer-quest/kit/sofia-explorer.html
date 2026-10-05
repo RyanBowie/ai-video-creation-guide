@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>The Great Copilot Quest — Explorer Cut (Ep.1 opening)</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
+#c{position:absolute;inset:0;margin:auto;width:100vw;height:56.25vw;max-height:100vh;max-width:177.78vh;background:#000;image-rendering:auto}
+#hint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);font:13px/1 "Segoe UI",system-ui,sans-serif;color:#f6e7c1;background:rgba(40,24,10,.8);border:1px solid rgba(214,170,90,.6);padding:9px 16px;border-radius:999px;pointer-events:none;transition:opacity .4s;white-space:nowrap}
+</style></head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<div id="hint">Click or press Space to play · R restart · ←/→ skip</div>
+<script src="voice.js"></script>
+<script src="voice_timing.js"></script>
+<script src="film.js"></script>
+<script src="retro.js"></script>
+<script src="heroine.js"></script>
+<script src="mapdata.js"></script>
+<script src="map.js"></script>
+<script src="scenes.js"></script>
+<script src="audio.js"></script>
+<script src="timeline.js"></script>
+<script>
+const cv=document.getElementById('c');
+let post=null,ctx2=null;
+try{post=makePost(cv);}catch(e){post=null;}
+function render(F){
+ try{
+  const over=draw(F/FPS);
+  if(post)post.render(R.SC,R.GC,F,null,over);
+  else{
+   if(!ctx2)ctx2=cv.getContext('2d');
+   ctx2.globalCompositeOperation='source-over';ctx2.drawImage(R.SC,0,0,cv.width,cv.height);
+   ctx2.globalCompositeOperation='lighter';ctx2.drawImage(R.GC,0,0,cv.width,cv.height);
+   ctx2.globalCompositeOperation='source-over';
+  }
+  return null;
+ }catch(e){return e&&e.stack?e.stack:String(e);}
+}
+let F=0;
+const qs=new URLSearchParams(location.search);
+if(qs.has('frame'))F=Math.max(0,Math.min(TOTAL-1,parseInt(qs.get('frame'),10)||0));
+{const err=render(F);if(err)window.ERR=err;window.READY=true;}
+const hint=document.getElementById('hint');
+if(navigator.webdriver&&hint)hint.remove();
+let playing=false,t0=0,raf=0;
+function loop(){
+ if(!playing)return;
+ const pos=(performance.now()-t0)/1000;
+ let nF=Math.min(TOTAL-1,Math.floor(pos*FPS));
+ if(nF!==F){audioStep(F,nF);F=nF;render(F);}
+ if(F>=TOTAL-1){playing=false;audioStop();if(hint)hint.style.opacity=1;return;}
+ raf=requestAnimationFrame(loop);
+}
+function play(){
+ if(F>=TOTAL-1){F=0;render(F);}
+ playing=true;t0=performance.now()-F/FPS*1000;if(hint)hint.style.opacity=0;
+ audioInit().then(()=>{if(playing)audioSeek(F);}).catch(()=>{});
+ raf=requestAnimationFrame(loop);
+}
+function pause(){playing=false;cancelAnimationFrame(raf);audioStop();if(hint)hint.style.opacity=1;}
+function toggle(){playing?pause():play();}
+function seekTo(nF){F=Math.max(0,Math.min(TOTAL-1,nF));t0=performance.now()-F/FPS*1000;render(F);if(playing)audioSeek(F);}
+document.addEventListener('click',toggle);
+document.addEventListener('keydown',e=>{
+ if(e.code==='Space'){e.preventDefault();toggle();}
+ else if(e.key==='r'||e.key==='R')seekTo(0);
+ else if(e.key==='ArrowRight')seekTo(F+150);
+ else if(e.key==='ArrowLeft')seekTo(F-150);
+});
+</script>
+</body></html>

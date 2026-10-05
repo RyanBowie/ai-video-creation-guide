@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Music video</title>
+<style>
+@font-face{font-family:"PMarker";src:local("Ink Free"),local("Segoe Print"),local("Comic Sans MS")}
+@font-face{font-family:"Shantell";src:local("Segoe Print"),local("Ink Free"),local("Comic Sans MS")}
+html,body{margin:0;background:#111}canvas{display:block;width:100vw;height:auto}
+</style></head><body><canvas id="c"></canvas>
+<audio id="au" src="song.mp3"></audio>
+<script src="core.js"></script><script src="cast.js"></script><script src="fx.js"></script><script src="dance.js"></script>
+<script src="props.js"></script><script src="msx.js"></script><script src="scenes_a.js"></script><!-- more scenes_*.js -->
+<script src="timeline.js"></script>
+<script>
+const FPS = 30, SONG = 156.6;              // SONG = original track length (s)
+// bars removed from the audio (see audio-edit skill): [sourceStart, lengthRemoved], ascending source time
+const CUTS = [];
+const DUR = SONG - CUTS.reduce((s, c) => s + c[1], 0), TOTAL = Math.round(FPS * DUR);
+const SRC = t => { for (const [c, d] of CUTS) if (t >= c) t += d; return t; }; // output time -> song time
+function render(F) { try { draw(SRC(F / FPS)); return null; } catch (e) { return e.stack || String(e); } }
+(async () => {
+  setup(document.getElementById('c'));
+  await document.fonts.load('40px PMarker').catch(()=>{}); await document.fonts.load('40px Shantell').catch(()=>{}); await document.fonts.ready;
+  makePaper();
+  try { draw(0); window.READY = true; } catch (e) { window.ERR = e.stack || String(e); window.READY = true; console.error(e); }
+  // interactive preview: click to play with audio (not used by exporter)
+  if (!navigator.webdriver) {
+    const au = document.getElementById('au');
+    document.body.onclick = () => { au.paused ? au.play() : au.pause(); };
+    const loop = () => { if (!au.paused) { try { draw(SRC(Math.min(au.currentTime, DUR - 1e-3))); } catch (e) { console.error(e); } } requestAnimationFrame(loop); };
+    loop();
+  }
+})();
+</script></body></html>

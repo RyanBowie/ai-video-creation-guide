@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>character-rig demo</title>
+<style>
+@font-face{font-family:"PMarker";src:local("Ink Free"),local("Segoe Print"),local("Comic Sans MS")}
+@font-face{font-family:"Shantell";src:local("Segoe Print"),local("Ink Free"),local("Comic Sans MS")}
+html,body{margin:0;background:#111}canvas{display:block;width:100vw;height:auto}
+</style></head><body><canvas id="c"></canvas>
+<script src="core.js"></script><script src="cast.js"></script><script src="dance.js"></script>
+<script>
+// Pure function of time T. ?t=1.5 renders a still; otherwise it animates.
+function shadowAt(x, y, r) { C.save(); C.globalAlpha = .18; C.fillStyle = PAL.ink; path(ellPts(x, y, r, r * .16, 20)); C.fill(); C.restore(); }
+function draw(T) {
+  boil(T); paper();
+  letters('character-rig demo', 60, 90, 56, { fill: PAL.ink, shadow: false });
+  mark(1840, 80, 96, { rot: Math.sin(T * 2) * 4 });
+  // hero dancing on the beat
+  shadowAt(300, 980, 150); person(300, 980, 100, { pose: dance(T), eyes: 'open', mouth: Math.sin(T * 9) > 0 ? 'open' : 'smile', hands: { l: 'mic' }, sway: Math.sin(T * 3) * 8 });
+  // backup dancers, each offset in the pose cycle
+  ['word', 'excel', 'ppt', 'teams'].forEach((k, i) => { const x = 700 + i * 250; shadowAt(x, 980, 70); person(x, 980, 60, { look: k, pose: dance(T, i + 1), eyes: 'happy', mouth: 'smile', sway: 6 }); });
+  // runner + cameos
+  shadowAt(1720, 980, 60); person(1720, 980, 50, { look: 'ops', pose: run(T), eyes: 'narrow', mouth: 'flat' });
+  clippy(1520, 330, 36); shoggoth(1290, 330, 34, { t: T, mask: clamp((Math.sin(T) + 1) / 2) });
+  // expression row (bust framing, never floating heads)
+  ['open', 'happy', 'star', 'spiral', 'heart', 'shini'].forEach((e, i) => person(640 + i * 90, 420, 30, { eyes: e, mouth: ['smile', 'open', 'grin', 'wobble', 'cat', 'smirk'][i], brows: e === 'spiral' ? 'worry' : null, headOnly: true }));
+  grain();
+}
+(async () => {
+  setup(document.getElementById('c'));
+  await document.fonts.load('40px PMarker').catch(()=>{}); await document.fonts.load('40px Shantell').catch(()=>{}); await document.fonts.ready;
+  makePaper();
+  const t = new URLSearchParams(location.search).get('t');
+  try {
+    if (t !== null) { draw(+t); window.READY = true; }
+    else { const t0 = performance.now(); window.READY = true; (function loop() { draw((performance.now() - t0) / 1000); requestAnimationFrame(loop); })(); }
+  } catch (e) { window.ERR = e.stack || String(e); window.READY = true; console.error(e); }
+})();
+</script></body></html>
