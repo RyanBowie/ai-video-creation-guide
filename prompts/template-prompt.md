@@ -26,6 +26,7 @@ Study my references to understand what makes them work: the art style, colour pa
 You can also learn from these public community repos:
 - JohnHeibel/PDoomVideo (https://github.com/JohnHeibel/PDoomVideo): the source code for the Claude Opus 5.5 music video "I'm Upping My P(doom)", an example of advanced code-driven animation synced to music.
 - lemomo-ai/lemo-opuscar (https://github.com/lemomo-ai/lemo-opuscar): 43 film styles, each a reusable style prompt plus a short film made entirely in code.
+- RyanBowie/ai-video-creation-guide (https://github.com/RyanBowie/ai-video-creation-guide): example videos made with this prompt (a music video, a 90s cel-anime short and a 16 mm explorer film) plus the reusable Copilot skills behind them, covering motion graphics, character rigs, retro anime, voiceover, audio editing and checking the picture lines up with the sound.
 
 There are also many other reference repos that show different designs and styles. Go through my references and these repos to decide the most appropriate style for my context. Briefly tell me which style you picked and why, then carry on.
 

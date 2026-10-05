@@ -39,7 +39,7 @@ See [prompts/template-prompt.md](prompts/template-prompt.md) for the full templa
 - **[Reference Videos]**: screenshots, MP4s or links to videos and repos you like, and what you like about each. Copilot studies them for style, pacing and sound, then builds something original.
 - **[Extra Sources]** (optional): documents, brand assets, a script, music you have the rights to, or facts to get right.
 
-The rest of the prompt gives Copilot creative freedom over characters, animation, music, sound and voiceover, and points it at two community repos to learn from: [JohnHeibel/PDoomVideo](https://github.com/JohnHeibel/PDoomVideo) (advanced code-drawn animation synced to music) and [lemomo-ai/lemo-opuscar](https://github.com/lemomo-ai/lemo-opuscar) (43 film styles, each a style prompt plus a short film made entirely in code).
+The rest of the prompt gives Copilot creative freedom over characters, animation, music, sound and voiceover, and points it at three public repos to learn from: [JohnHeibel/PDoomVideo](https://github.com/JohnHeibel/PDoomVideo) (advanced code-drawn animation synced to music), [lemomo-ai/lemo-opuscar](https://github.com/lemomo-ai/lemo-opuscar) (43 film styles, each a style prompt plus a short film made entirely in code) and this repo (the example videos plus the [skills](skills/) used to make them).
 
 ## Install the skills
 
