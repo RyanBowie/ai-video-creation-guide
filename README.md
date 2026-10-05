@@ -16,6 +16,7 @@ Every frame is drawn in code (HTML Canvas, SVG and WebGL) and rendered to MP4 wi
 | [The Great Copilot Quest, Chapter One](docs/media/sofia-explorer.mp4) | Vintage explorer / adventure serial, 16 mm film, parchment map | 26 s | [PROMPT.md](examples/sofia-explorer/PROMPT.md) | [examples/sofia-explorer](examples/sofia-explorer) |
 | [Paper Copilot, Chapter 1: The Inbox Quest](docs/media/paper-copilot.mp4) | Paper cutout / Paper Mario-style paper theatre, turn-based RPG battle | 30 s | [PROMPT.md](examples/paper-copilot/PROMPT.md) | [examples/paper-copilot](examples/paper-copilot) |
 | [One rocket breaks the chart](docs/media/launch-race.mp4) | Data storytelling: a hand-annotated bar race on paper ([lemo-opuscar dataviz style](https://github.com/lemomo-ai/lemo-opuscar/blob/main/styles/dataviz/STYLE.md)) | 38 s | [PROMPT.md](examples/launch-race/PROMPT.md) | [examples/launch-race](examples/launch-race) |
+| [Sofia Return: Copilot Quest, Episode 1](docs/media/sofia-return.mp4) (original cut) | Papery watercolour, boiling ink, office cast with Microsoft 365 UI | 93 s | [PROMPT.md](examples/sofia-return/PROMPT.md) | [examples/sofia-return](examples/sofia-return) |
 | [Copilot Pop: *I'm Upping My P(doom)* remake](docs/media/copilot-pop.mp4) (silent) | Papery watercolour, boiling ink, K-pop music video | 2:34 | [pdoom-prompt.md](prompts/pdoom-prompt.md) | [Prompt, stills and credits](examples/pdoom/README.md) |
 
 ## Guide to video creation
@@ -76,7 +77,7 @@ python -m http.server 8000          # then open http://localhost:8000/sofia-retr
 python export_mp4.py                # renders sofia-retro.mp4 (1920x1080, 30 fps)
 ```
 
-The same works in `examples\sofia-explorer` with `sofia-explorer.html`. In `examples\paper-copilot`, open `paper-copilot.html` and run `python export.py` (`python export.py --stills 140 450` grabs stills at those frames). In `examples\launch-race`, run `python build_data.py` (refreshes `data.js` from GCAT) and then `python export.py`. `make_voice.py` regenerates the voiceover (`voice.js`) and `stills.py` takes stills at given times.
+The same works in `examples\sofia-explorer` with `sofia-explorer.html`, and in `examples\sofia-return` with `sofia-return.html` (`python export_mp4.py sofia-return.html`). In `examples\paper-copilot`, open `paper-copilot.html` and run `python export.py` (`python export.py --stills 140 450` grabs stills at those frames). In `examples\launch-race`, run `python build_data.py` (refreshes `data.js` from GCAT) and then `python export.py`. `make_voice.py` regenerates the voiceover (`voice.js`) and `stills.py` takes stills at given times.
 
 ## Credits
 

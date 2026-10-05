@@ -1,0 +1,108 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Copilot Quest · Episode 1: Enter Copilot</title>
+<style>
+@font-face{font-family:"PMarker";src:local("Ink Free"),local("Segoe Print"),local("Comic Sans MS")}
+@font-face{font-family:"Shantell";src:local("Segoe Print"),local("Ink Free"),local("Comic Sans MS")}
+html,body{margin:0;background:#111;overflow:hidden}canvas{display:block;width:100vw;height:auto;max-height:100vh;object-fit:contain;margin:auto}
+#hint{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);color:#fff;font:600 18px "Segoe UI",sans-serif;background:rgba(0,0,0,.55);padding:10px 18px;border-radius:20px;pointer-events:none}
+</style></head><body><canvas id="c"></canvas><div id="hint">Click to play / pause · ← → to scrub · R to restart</div>
+<script src="voice.js"></script>
+<script src="core.js"></script><script src="cast.js"></script><script src="fx.js"></script><script src="dance.js"></script>
+<script src="props.js"></script><script src="msx.js"></script><script src="sofia.js"></script>
+<script src="scenes_a.js"></script><script src="scenes_b.js"></script><script src="timeline.js"></script>
+<script>
+// ============================================================ audio: voiceover (voice.js) + synthesised SFX
+const AU = { ctx: null, bufs: {}, live: [], on: true };
+function b64buf(b64) { const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; }
+async function audioInit() {
+  if (AU.ctx) { if (AU.ctx.state !== 'running') await AU.ctx.resume(); return; }
+  await audioSetup(AU.ctx = new AudioContext());
+}
+async function audioSetup(ctx) {
+  AU.master = ctx.createDynamicsCompressor(); AU.master.threshold.value = -14; AU.master.ratio.value = 3;
+  const mg = ctx.createGain(); mg.gain.value = .68; AU.master.connect(mg).connect(ctx.destination);
+  const len = ctx.sampleRate * 1.6, ir = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+  AU.verb = ctx.createConvolver(); AU.verb.buffer = ir; AU.verb.connect(AU.master);
+  AU.noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate); const nd = AU.noise.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  if (window.VOICE) await Promise.all(Object.entries(VOICE).map(async ([k, v]) => { AU.bufs[k] = await ctx.decodeAudioData(b64buf(v)); }));
+}
+const vol = (ctx, v) => { const g = ctx.createGain(); g.gain.value = v; return g; };
+function chain(kind) {
+  const ctx = AU.ctx, inp = ctx.createGain();
+  if (kind === 'room') { inp.connect(vol(ctx, 1)).connect(AU.master); inp.connect(vol(ctx, .1)).connect(AU.verb); return inp; }
+  inp.connect(AU.master); inp.connect(vol(ctx, .05)).connect(AU.verb); return inp;
+}
+function playClip(key, kind, offset) {
+  const b = AU.bufs[key]; if (!b || offset >= b.duration) return;
+  const src = AU.ctx.createBufferSource(); src.buffer = b; src.connect(chain(kind)); src.start(AU.at ?? 0, Math.max(0, offset)); AU.live.push(src);
+}
+function env(g, t, a, peak, d) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + d); }
+function noiseSrc(t, dur) { const s = AU.ctx.createBufferSource(); s.buffer = AU.noise; s.loop = true; s.start(t, Math.random()); s.stop(t + dur); AU.live.push(s); return s; }
+function osc(type, f, t, dur) { const o = AU.ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); o.start(t); o.stop(t + dur); AU.live.push(o); return o; }
+function filt(type, f, q = 1) { const b = AU.ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }
+function sfx(name) {
+  const ctx = AU.ctx, t = AU.at ?? ctx.currentTime + .01, M = AU.master, V = AU.verb;
+  const route = (node, dry, wet = 0) => { node.connect(vol(ctx, dry)).connect(M); if (wet) node.connect(vol(ctx, wet)).connect(V); };
+  if (name === 'chime') [523.3, 784, 1046.5, 1568].forEach((f, i) => { const g = ctx.createGain(); env(g, t + i * .07, .01, .1, 1.4); osc('sine', f, t + i * .07, 1.6).connect(g); route(g, 1, .5); });
+  if (name === 'whoosh') { const n = noiseSrc(t, .5), bp = filt('bandpass', 500, 1.2); bp.frequency.exponentialRampToValueAtTime(3200, t + .35); const g = ctx.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.22, t + .18); g.gain.exponentialRampToValueAtTime(.0001, t + .45); n.connect(bp).connect(g); route(g, 1, .2); }
+  if (name === 'pop') { const o = osc('sine', 520, t, .14); o.frequency.exponentialRampToValueAtTime(1100, t + .06); const g = ctx.createGain(); env(g, t, .003, .3, .1); o.connect(g); route(g, 1, .1); }
+  if (name === 'ping') [880, 1318.5].forEach((f, i) => { const g = ctx.createGain(); env(g, t + i * .09, .004, .16, .35); osc('triangle', f, t + i * .09, .45).connect(g); route(g, 1, .25); });
+  if (name === 'stamp') { const o = osc('sine', 140, t, .3); o.frequency.exponentialRampToValueAtTime(45, t + .22); const g = ctx.createGain(); env(g, t, .002, .8, .26); o.connect(g); route(g, 1, .2); const n = noiseSrc(t, .1), ng = ctx.createGain(); env(ng, t, .001, .45, .08); n.connect(filt('lowpass', 2600)).connect(ng); route(ng, 1); }
+  if (name === 'typing') for (let i = 0; i < 12; i++) { const d = i * .06 + Math.random() * .025, n = noiseSrc(t + d, .04), bp = filt('bandpass', 2500 + Math.random() * 1800, 2), g = ctx.createGain(); env(g, t + d, .002, .12, .03); n.connect(bp).connect(g); route(g, 1); }
+  if (name === 'xp') [659.3, 880, 1174.7].forEach((f, i) => { const g = ctx.createGain(); env(g, t + i * .06, .004, .12, .25); osc('square', f, t + i * .06, .3).connect(filt('lowpass', 3000)).connect(g); route(g, 1, .15); });
+  if (name === 'levelup') [523.3, 659.3, 784, 1046.5, 1318.5].forEach((f, i) => { const g = ctx.createGain(); env(g, t + i * .08, .005, .12, i === 4 ? .9 : .2); osc('triangle', f, t + i * .08, 1.1).connect(g); route(g, 1, .4); });
+}
+async function exportAudio() {
+  const SR = 48000, ctx = new OfflineAudioContext(2, Math.ceil(TOTAL / FPS * SR), SR), keep = AU.ctx;
+  AU.ctx = ctx; AU.live = []; await audioSetup(ctx);
+  VO_CUES.forEach(([k, at, kind]) => { AU.at = at / FPS; playClip(k, kind, 0); });
+  SFX_CUES.forEach(([at, n]) => { AU.at = at / FPS; sfx(n); });
+  AU.at = null;
+  const buf = await ctx.startRendering(); AU.ctx = keep; AU.live = [];
+  const n = buf.length, L = buf.getChannelData(0), R = buf.getChannelData(1), dv = new DataView(new ArrayBuffer(44 + n * 4));
+  const ws = (o, str) => [...str].forEach((c, i) => dv.setUint8(o + i, c.charCodeAt(0)));
+  ws(0, "RIFF"); dv.setUint32(4, 36 + n * 4, true); ws(8, "WAVEfmt "); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 2, true);
+  dv.setUint32(24, SR, true); dv.setUint32(28, SR * 4, true); dv.setUint16(32, 4, true); dv.setUint16(34, 16, true); ws(36, "data"); dv.setUint32(40, n * 4, true);
+  for (let i = 0; i < n; i++) { dv.setInt16(44 + i * 4, Math.max(-1, Math.min(1, L[i])) * 32767, true); dv.setInt16(46 + i * 4, Math.max(-1, Math.min(1, R[i])) * 32767, true); }
+  const u = new Uint8Array(dv.buffer); let bin = ""; for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+function audioStop() { AU.live.forEach(n => { try { n.stop(); } catch (e) {} }); AU.live = []; }
+function audioSeek(F) { if (!AU.ctx || !AU.on) return; audioStop(); AU.at = null; VO_CUES.forEach(([k, at, kind]) => { if (F >= at) playClip(k, kind, (F - at) / FPS); }); }
+function audioStep(prev, F) {
+  if (!AU.ctx || !AU.on || AU.ctx.state !== 'running') return;
+  AU.at = null;
+  VO_CUES.forEach(([k, at, kind]) => { if (prev < at && F >= at) playClip(k, kind, (F - at) / FPS); });
+  SFX_CUES.forEach(([at, n]) => { if (prev < at && F >= at && F - at < 6) sfx(n); });
+}
+
+// ============================================================ render + preview
+function render(F) { try { draw(F / FPS); return null; } catch (e) { return e.stack || String(e); } }
+(async () => {
+  setup(document.getElementById('c'));
+  await document.fonts.load('40px PMarker').catch(() => {}); await document.fonts.load('40px Shantell').catch(() => {}); await document.fonts.ready;
+  makePaper();
+  try { draw(0); window.READY = true; } catch (e) { window.ERR = e.stack || String(e); window.READY = true; console.error(e); }
+  if (navigator.webdriver) { document.getElementById('hint').remove(); return; }
+  let frame = 0, playing = false, last = null;
+  const hint = document.getElementById('hint');
+  const toggle = async () => { playing = !playing; last = null; if (playing) { if (frame >= TOTAL - 1) frame = 0; hint.style.display = 'none'; await audioInit(); audioSeek(frame); } else audioStop(); };
+  document.body.onclick = toggle;
+  addEventListener('keydown', async e => {
+    if (e.code === 'Space') { e.preventDefault(); toggle(); }
+    if (e.key === 'r' || e.key === 'R') { frame = 0; last = null; if (playing) audioSeek(0); }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { frame = Math.max(0, Math.min(TOTAL - 1, frame + (e.key === 'ArrowRight' ? 150 : -150))); last = null; if (playing) audioSeek(frame); else render(frame); }
+  });
+  const loop = ts => {
+    if (playing) {
+      if (last == null) last = ts;
+      const el = Math.floor((ts - last) / (1000 / FPS));
+      if (el >= 1) { const pf = frame; frame += el; last += el * 1000 / FPS; audioStep(pf, frame); render(Math.min(frame, TOTAL - 1)); }
+      if (frame >= TOTAL - 1) { playing = false; audioStop(); hint.style.display = ''; }
+    }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+})();
+</script></body></html>
