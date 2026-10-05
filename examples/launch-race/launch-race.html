@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>One rocket breaks the chart — orbital launches 1957–2025</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1a0f0c; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
+  #wrap { position: absolute; inset: 0 0 56px 0; display: flex; align-items: center; justify-content: center; }
+  body.clean #wrap { inset: 0; }
+  #stage { width: 1920px; height: 1080px; flex: none; transform-origin: center center; position: relative; }
+  #c { width: 1920px; height: 1080px; display: block; }
+  #bar { position: absolute; left: 0; right: 0; bottom: 0; height: 56px; display: flex; gap: 10px; align-items: center; padding: 0 16px; background: #24140f; color: #f3e6cf; }
+  body.clean #bar { display: none; }
+  #bar button { background: #f3e6cf; color: #2a1712; border: 0; border-radius: 6px; padding: 7px 14px; font-weight: 700; cursor: pointer; }
+  #scrub { flex: 1; accent-color: #e8a13a; }
+  #time { font-variant-numeric: tabular-nums; min-width: 110px; text-align: right; }
+  #start { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(20,10,8,.55); cursor: pointer; z-index: 3; }
+  #start div { background: #f3e6cf; color: #2a1712; font: 800 34px 'Segoe UI', sans-serif; padding: 22px 40px; border-radius: 14px; box-shadow: 0 10px 0 #9c6a3a; transform: rotate(-2deg); }
+  body.clean #start { display: none !important; }
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage"><canvas id="c" width="1920" height="1080"></canvas></div></div>
+<div id="start"><div>▶ Play with sound</div></div>
+<div id="bar">
+  <button id="play">Play</button><button id="restart">Restart</button><button id="mute">Sound on</button>
+  <input id="scrub" type="range" min="0" value="0" step="1"><span id="time">0.0s</span>
+  <span style="opacity:.6;font-size:12px">Space play · R restart · H hide UI · M mute</span>
+</div>
+<script>window.addEventListener('error', e => { window.ERR = (window.ERR || '') + (e.message || e) + ' @' + e.lineno + '\n'; });</script>
+<script src="voice.js"></script>
+<script src="voice_timing.js"></script>
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script src="audio.js"></script>
+</body>
+</html>

@@ -27,7 +27,7 @@ You can also learn from these public community repos:
 - JohnHeibel/PDoomVideo (https://github.com/JohnHeibel/PDoomVideo): the source code for the Claude Opus 5.5 music video "I'm Upping My P(doom)", an example of advanced code-driven animation synced to music.
 - lemomo-ai/lemo-opuscar (https://github.com/lemomo-ai/lemo-opuscar): 43 film styles, each a reusable style prompt plus a short film made entirely in code.
 - francozanardi/papermotion (https://github.com/francozanardi/papermotion): paper-cutout animated shorts made entirely in code by AI agents.
-- RyanBowie/ai-video-creation-guide (https://github.com/RyanBowie/ai-video-creation-guide): example videos made with this prompt (a music video, a 90s cel-anime short, a 16 mm explorer film and a paper-cutout RPG short) plus the reusable Copilot skills behind them, covering motion graphics, character rigs, retro anime, paper cutouts, voiceover, audio editing and checking the picture lines up with the sound.
+- RyanBowie/ai-video-creation-guide (https://github.com/RyanBowie/ai-video-creation-guide): example videos made with this prompt (a music video, a 90s cel-anime short, a 16 mm explorer film, a paper-cutout RPG short and a data-storytelling bar race) plus the reusable Copilot skills behind them, covering motion graphics, character rigs, retro anime, paper cutouts, voiceover, audio editing and checking the picture lines up with the sound.
 
 There are also many other reference repos that show different designs and styles. Go through my references and these repos to decide the most appropriate style for my context. Briefly tell me which style you picked and why, then carry on.
 

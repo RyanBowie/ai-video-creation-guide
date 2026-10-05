@@ -1,4 +1,4 @@
-"""Generates voice.js (base64 MP3 clips) + voice_timing.js/.json (word timings) for paper-copilot.html.
+"""Generates voice.js (base64 MP3 clips) + voice_timing.js/.json (word timings) for launch-race.html.
 
 Usage:  python make_voice.py [key ...]   (needs: pip install --user edge-tts imageio-ffmpeg numpy)
         python make_voice.py --trim         re-trims trailing silence on the existing clips
@@ -11,15 +11,15 @@ import edge_tts, imageio_ffmpeg, numpy as np
 
 TAIL = 0.06  # seconds kept after the last audible sample (edge-tts pads ~0.35s of silence)
 
-NARRATOR = dict(voice="en-US-AndrewMultilingualNeural", rate="+4%", pitch="+0Hz")
+NARRATOR = dict(voice="en-GB-RyanNeural", rate="+2%", pitch="+0Hz")
 
 LINES = {
-    "intro":   (NARRATOR, "Chapter one... The Inbox Quest!"),
-    "monday":  (NARRATOR, "Monday morning. Pip opens the inbox... and nine hundred ninety-nine emails attack!"),
-    "partner": (NARRATOR, "Running out of time? Call in a partner... Copilot!"),
-    "attack":  (NARRATOR, "Summarise the inbox. Sort the meetings. Excellent!"),
-    "win":     (NARRATOR, "Inbox zero. Three hours back. Level up!"),
-    "outro":   (NARRATOR, "Microsoft three-sixty-five Copilot. Your partner for every quest."),
+    "sputnik": (NARRATOR, "October, nineteen fifty-seven. One small beep from orbit."),
+    "race":    (NARRATOR, "Ten years on, the Soviet Union leads the race."),
+    "fall":    (NARRATOR, "Then the Soviet Union ends... and so does the boom."),
+    "china":   (NARRATOR, "Twenty eighteen. China takes the lead."),
+    "falcon":  (NARRATOR, "Then one rocket breaks the chart. Falcon 9 flew nine in ten American launches."),
+    "end":     (NARRATOR, "Three hundred and twenty-four launches in one year. The next cell is still empty."),
 }
 
 def trim(mp3):

@@ -15,6 +15,7 @@ Every frame is drawn in code (HTML Canvas, SVG and WebGL) and rendered to MP4 wi
 | [Copilot Quest, Episode 1: Enter Copilot](docs/media/sofia-retro.mp4) | 90s cel-anime / arcade, CRT finish, chiptune | 89.5 s | [PROMPT.md](examples/sofia-retro/PROMPT.md) | [examples/sofia-retro](examples/sofia-retro) |
 | [The Great Copilot Quest, Chapter One](docs/media/sofia-explorer.mp4) | Vintage explorer / adventure serial, 16 mm film, parchment map | 26 s | [PROMPT.md](examples/sofia-explorer/PROMPT.md) | [examples/sofia-explorer](examples/sofia-explorer) |
 | [Paper Copilot, Chapter 1: The Inbox Quest](docs/media/paper-copilot.mp4) | Paper cutout / Paper Mario-style paper theatre, turn-based RPG battle | 30 s | [PROMPT.md](examples/paper-copilot/PROMPT.md) | [examples/paper-copilot](examples/paper-copilot) |
+| [One rocket breaks the chart](docs/media/launch-race.mp4) | Data storytelling: a hand-annotated bar race on paper ([lemo-opuscar dataviz style](https://github.com/lemomo-ai/lemo-opuscar/blob/main/styles/dataviz/STYLE.md)) | 38 s | [PROMPT.md](examples/launch-race/PROMPT.md) | [examples/launch-race](examples/launch-race) |
 | [Copilot Pop: *I'm Upping My P(doom)* remake](docs/media/copilot-pop.mp4) (silent) | Papery watercolour, boiling ink, K-pop music video | 2:34 | [pdoom-prompt.md](prompts/pdoom-prompt.md) | [Prompt, stills and credits](examples/pdoom/README.md) |
 
 ## Guide to video creation
@@ -75,7 +76,7 @@ python -m http.server 8000          # then open http://localhost:8000/sofia-retr
 python export_mp4.py                # renders sofia-retro.mp4 (1920x1080, 30 fps)
 ```
 
-The same works in `examples\sofia-explorer` with `sofia-explorer.html`. In `examples\paper-copilot`, open `paper-copilot.html` and run `python export.py` (`python export.py --stills 140 450` grabs stills at those frames). `make_voice.py` regenerates the voiceover (`voice.js`) and `stills.py` takes stills at given times.
+The same works in `examples\sofia-explorer` with `sofia-explorer.html`. In `examples\paper-copilot`, open `paper-copilot.html` and run `python export.py` (`python export.py --stills 140 450` grabs stills at those frames). In `examples\launch-race`, run `python build_data.py` (refreshes `data.js` from GCAT) and then `python export.py`. `make_voice.py` regenerates the voiceover (`voice.js`) and `stills.py` takes stills at given times.
 
 ## Credits
 
@@ -83,6 +84,7 @@ The same works in `examples\sofia-explorer` with `sofia-explorer.html`. In `exam
 - **donald (@donaldjewkes)**: the one-prompt Opus 5.5 video prompt the P(doom) remake was adapted from. https://x.com/donaldjewkes/status/2102801274173587569
 - **Song:** *I'm Upping My P(doom)*. Lyrics by [osmarks](https://docs.osmarks.net/hypha/p%28doom%29_song_objectively_correct_interpretation), built on an opening verse and chorus by MusicPerson, with lines from the EleutherAI Discord and help from Claude. Originally generated with Udio (November 2024, [YouTube](https://www.youtube.com/watch?v=uEB5E67vcPA)); the "Claude-Pop" version is by [deckard (@slimer48484)](https://x.com/slimer48484/status/2097752569212756134). The song and lyrics belong to their authors and aren't covered by this repo's licence. The remake is shared silent.
 - **lemomo-ai/lemo-opuscar** by LemoLab (MIT): film-style references. Parts of the Sofia engines are adapted from it; see each example's `THIRD_PARTY_NOTICES.md`.
+- **Jonathan C. McDowell, GCAT** (CC BY 4.0): the orbital launch data behind *One rocket breaks the chart*. Its look follows the lemo-opuscar dataviz style; that engine was written from scratch.
 - **francozanardi/papermotion** by Franco Zanardi (MIT): paper-cutout shorts made in code, the style reference for Paper Copilot. Its engine was written from scratch and uses none of that code.
 - **Natural Earth** (public domain): the world map coastlines in Sofia Explorer.
 - Voiceovers: Microsoft Edge neural TTS via [edge-tts](https://github.com/rany2/edge-tts).
