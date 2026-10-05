@@ -27,19 +27,19 @@ Every frame is drawn in code (HTML Canvas, SVG and WebGL) and rendered to MP4 wi
    ![New session](docs/media/step4-new-session.png)
 5. **Select Claude Opus 5.5 and set reasoning effort to High.** Reasoning effort changes how much work it puts in. Higher effort means more complex results but takes more time.
    ![Model and effort](docs/media/step5-model-effort.png)
-6. **Modify one of the prompts** and send it. Start from the [starter template](prompts/template-prompt.md) or one of the example prompts. You can ask Copilot to tailor the prompt to your needs first.
+6. **Modify one of the prompts** and send it. Start from the [starter template](prompts/template-prompt.md) or one of the example prompts, and fill in your context, reference videos and extra sources. You can ask Copilot to tailor the prompt to your needs first.
 
 Then review the MP4, give feedback and iterate. Short first cuts (20–30 s) and concrete notes work best.
 
 ## Starter prompt
 
-See [prompts/template-prompt.md](prompts/template-prompt.md) for the full template and optional add-ons. In short:
+See [prompts/template-prompt.md](prompts/template-prompt.md) for the full template, how to add references and optional add-ons. You fill in three inputs:
 
-- Point Copilot at [JohnHeibel/PDoomVideo](https://github.com/JohnHeibel/PDoomVideo) as an example of advanced code-drawn animation.
-- Describe your story in **[Context]**, and ask for an MP4 under about 30 s to review first.
-- Give it creative freedom over characters, animation, music, sound and voiceover.
-- Point it at [lemomo-ai/lemo-opuscar](https://github.com/lemomo-ai/lemo-opuscar) (43 film styles, each a style prompt plus a short film made entirely in code) to pick a style.
-- Add any links or files in **[Extra Sources]**.
+- **[Context]**: what the video is about, who it's for and the story. It asks for an MP4 under about 30 s to review first.
+- **[Reference Videos]**: screenshots, MP4s or links to videos and repos you like, and what you like about each. Copilot studies them for style, pacing and sound, then builds something original.
+- **[Extra Sources]** (optional): documents, brand assets, a script, music you have the rights to, or facts to get right.
+
+The rest of the prompt gives Copilot creative freedom over characters, animation, music, sound and voiceover, and points it at two community repos to learn from: [JohnHeibel/PDoomVideo](https://github.com/JohnHeibel/PDoomVideo) (advanced code-drawn animation synced to music) and [lemomo-ai/lemo-opuscar](https://github.com/lemomo-ai/lemo-opuscar) (43 film styles, each a style prompt plus a short film made entirely in code).
 
 ## Install the skills
 

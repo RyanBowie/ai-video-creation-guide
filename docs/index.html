@@ -474,6 +474,7 @@ html.dl-motion .dl-reveal.dl-in { opacity: 1; transform: none; }
 <style>
 figure.shot video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; }
 .prompt-box code { font-family: var(--font); font-size: 0.95rem; line-height: 1.65; }
+.prompt-box .ph-hint, .ph-hint { color: var(--cp-text-muted); font-style: italic; }
 mark { padding: 0 4px; border-radius: 4px; background: var(--cp-accent-soft); color: var(--cp-accent); font-weight: 700; }
 .step-shot { margin-top: 12px; }
 .shot figcaption .link-list { margin: 10px 0 0; }
@@ -577,7 +578,7 @@ kbd { padding: 1px 6px; border: 1px solid var(--cp-border-strong); border-bottom
       <ul class="facts" aria-label="At a glance">
         <li><strong>3 example videos</strong><span>All watchable; two with full source</span></li>
         <li><strong>7 reusable skills</strong><span>Engines, cast, style rules and gotchas</span></li>
-        <li><strong>1 prompt template</strong><span>Fill in two placeholders</span></li>
+        <li><strong>1 prompt template</strong><span>Three inputs: context, references, sources</span></li>
         <li><strong>6 setup steps</strong><span>From install to your first MP4</span></li>
         <li><strong>Opus 5.5</strong><span>With reasoning effort set to High</span></li>
         <li><strong>No video model</strong><span>Everything is drawn in code</span></li>
@@ -639,7 +640,7 @@ kbd { padding: 1px 6px; border: 1px solid var(--cp-border-strong); border-bottom
         </li>
         <li>
           <span class="step-title">Modify a prompt and send it</span>
-          <p>Start from <a href="#prompt">the starter prompt</a> or one of the <a href="#videos">example prompts</a>. Replace <strong>[Context]</strong> with your story and <strong>[Extra Sources]</strong> with any links or files. You can ask Copilot to tailor the prompt for you first. Then watch the MP4, give specific feedback and iterate.</p>
+          <p>Start from <a href="#prompt">the starter prompt</a> or one of the <a href="#videos">example prompts</a>. Replace <strong>[Context]</strong> with your story, <strong>[Reference Videos]</strong> with screenshots, MP4s or links to videos you like, and <strong>[Extra Sources]</strong> with anything else Copilot should use. You can ask Copilot to tailor the prompt for you first. Then watch the MP4, give specific feedback and iterate.</p>
         </li>
       </ol>
     </section>
@@ -647,22 +648,48 @@ kbd { padding: 1px 6px; border: 1px solid var(--cp-border-strong); border-bottom
     <section class="section" id="prompt" aria-labelledby="prompt-h">
       <p class="section-kicker">Copy and adapt</p>
       <h2 id="prompt-h">The starter prompt</h2>
-      <p>Copy it, fill in the two highlighted placeholders and paste it into your new session. It points Copilot at two public community repos to learn from: <a href="https://github.com/JohnHeibel/PDoomVideo">JohnHeibel/PDoomVideo</a> for advanced code-driven animation, and <a href="https://github.com/lemomo-ai/lemo-opuscar">lemomo-ai/lemo-opuscar</a> for 43 reusable film styles.</p>
-      <div class="code-box prompt-box"><code id="prompt-text">JohnHeibel/PDoomVideo (https://github.com/JohnHeibel/PDoomVideo) is the source code for the Claude Opus 5.5 music video "I'm Upping My P(doom)". It's an example of a repo being used to produce some advanced animation. I want you to build an animation, not necessarily in a similar style, that covers the specific context below. To start with, keep the animation under about 30 seconds so I can review it, and produce it as an MP4.
+      <p>Copy it, replace the three highlighted inputs with your own and paste it into your new session. The <span class="ph-hint">(Your input: &hellip;)</span> lines tell you what goes where:</p>
+      <ul>
+        <li><strong>[Context]</strong>: what the video is about, who it&#39;s for and the story you want to tell.</li>
+        <li><strong>[Reference Videos]</strong>: screenshots, MP4s or links to videos and repos whose look you like, and what you like about each.</li>
+        <li><strong>[Extra Sources]</strong> (optional): documents, brand assets, a script, music you have the rights to, or facts to get right.</li>
+      </ul>
+      <p>It also points Copilot at two public community repos to learn from: <a href="https://github.com/JohnHeibel/PDoomVideo">JohnHeibel/PDoomVideo</a> for advanced code-driven animation, and <a href="https://github.com/lemomo-ai/lemo-opuscar">lemomo-ai/lemo-opuscar</a> for 43 reusable film styles.</p>
+      <div class="code-box prompt-box"><code id="prompt-text">I want you to build a short animated video, drawn entirely in code, that brings the context below to life. To start with, keep it under about 30 seconds so I can review it, and produce it as an MP4.
+
+Everything in square brackets below is my input. Treat it as the brief.
 
 <mark>[Context]</mark>
+<span class="ph-hint">(Your input: what the video is about, who it's for, the story or key message, and any characters, brand, tone or must-have moments.)</span>
+
+<mark>[Reference Videos]</mark>
+<span class="ph-hint">(Your input: screenshots, MP4 files or links to videos and repos you like. For each one, say what you like about it, for example the art style, colours, characters, pacing, transitions or music. Delete this section if you have none, and Copilot will use the community repos below.)</span>
+
+Study my references to understand what makes them work: the art style, colour palette, character design, camera moves, pacing, transitions and how the sound lines up with the picture. For MP4s, pull out stills and listen to the audio. For repos, read the README and code to see how the animation is built. Take inspiration from them, but don't copy them: build something original that fits my context.
+
+You can also learn from these public community repos:
+- JohnHeibel/PDoomVideo (https://github.com/JohnHeibel/PDoomVideo): the source code for the Claude Opus 5.5 music video "I'm Upping My P(doom)", an example of advanced code-driven animation synced to music.
+- lemomo-ai/lemo-opuscar (https://github.com/lemomo-ai/lemo-opuscar): 43 film styles, each a reusable style prompt plus a short film made entirely in code.
+
+There are also many other reference repos that show different designs and styles. Go through my references and these repos to decide the most appropriate style for my context. Briefly tell me which style you picked and why, then carry on.
 
 Feel free to get creative with this design: cool animations, characters, whatever you need to complete the scene. Also cover the audio: sounds, music, voiceovers or anything else you need. You have creative freedom to build something really quite cool here.
 
-lemomo-ai/lemo-opuscar (https://github.com/lemomo-ai/lemo-opuscar) has 43 film styles, each a reusable style prompt plus a short film made entirely in code. There are also many other reference repos that show different designs and styles. Go through these to decide the most appropriate style for the context provided above.
-
 <mark>[Extra Sources]</mark>
+<span class="ph-hint">(Your input, optional: anything else to use, such as documents, brand guidelines, logos, a script or voiceover text, music you have the rights to, or facts the video must get right. Delete this section if you have nothing to add.)</span>
 
 Take your time with the generation. Think creatively and make this something really new and fresh.</code><button type="button" class="btn btn-sm copy-btn" data-copy-target="prompt-text" data-jsonly hidden>Copy</button></div>
       <p class="small muted">Also in the repo as <a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/prompts/template-prompt.md">prompts/template-prompt.md</a>.</p>
+      <h3>How to add your references</h3>
+      <div class="grid-2">
+        <div class="card"><p><span class="badge badge-accent">Screenshots</span></p><p>Paste or drag images into the chat with the prompt, then describe them under <strong>[Reference Videos]</strong>, for example &ldquo;the first screenshot: I like the paper texture and soft colours&rdquo;.</p></div>
+        <div class="card"><p><span class="badge badge-accent">MP4 files</span></p><p>Copy them into your project folder (for example a <code>references</code> folder) and give the file names. Copilot can pull out stills and the audio to study the style and pacing.</p></div>
+        <div class="card"><p><span class="badge badge-accent">Links</span></p><p>GitHub repos work best, because Copilot can read the README and code. For YouTube and other video sites it can usually only read the page, not watch the video, so add a screenshot or describe what you like.</p></div>
+      </div>
+      <p class="small muted">Use references for inspiration, not copying. Don&#39;t ask Copilot to reproduce someone else&#39;s characters, artwork or music.</p>
       <div class="callout callout-accent" role="note">
         <p class="callout-title"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></svg>Let Copilot tailor it</p>
-        <p>Not sure what to write for <strong>[Context]</strong>? Paste the template and ask: “Rewrite this prompt for a 30-second video about <em>your topic</em>, aimed at <em>your audience</em>. Suggest three style options first.”</p>
+        <p>Not sure what to write? Paste the template, attach your references and ask: &ldquo;Rewrite this prompt for a 30-second video about <em>your topic</em>, aimed at <em>your audience</em>, inspired by the references I&#39;ve attached. Suggest three style options first.&rdquo;</p>
       </div>
       <h3>Optional add-ons</h3>
       <p>Append any of these to the prompt.</p>
