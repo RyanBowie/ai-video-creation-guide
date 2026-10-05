@@ -1,17 +1,26 @@
 // audio.js - voiceover + synthesised pencil/paper SFX + a data-driven score (one plonk per year, pitched by world launches), offline export, and the player loop.
 'use strict';
-const VO_CUES = [['sputnik', 12, 'narr'], ['race', 262, 'narr'], ['fall', 400, 'narr'], ['china', 542, 'narr'], ['falcon', 653, 'narr'], ['end', 875, 'narr']];
-// [frame, name, arg]; pencil sounds follow the engine's write/line windows so every mark on the page is heard.
+const VO_CUES = [['sputnik', 12, 'narr'], ['fail', 300, 'narr'], ['gagarin', 540, 'narr'], ['apollo', 715, 'narr'], ['soviet', 893, 'narr'], ['fall', 1060, 'narr'], ['landing', 1270, 'narr'], ['falcon', 1560, 'narr'], ['end', 1745, 'narr']];
+// [frame, name, arg]; pencil sounds follow the engine's write/line windows so every mark on the page is heard; card SFX follow the drawn action.
 const SFX_CUES = (() => {
   const C = [], s = (f, n, a) => C.push([f, n, a]), dur = w => (w[1] - w[0]) / FPS;
-  s(T.beep, 'tap'); s(T.beep + 5, 'beep'); s(128, 'whoosh');
-  s(140, 'ruler', dur([140, 166])); s(174, 'ruler', dur([174, 186])); s(200, 'thud');
-  NOTES.forEach(n => { s(n.w[0], 'scratch', dur(n.w)); s(n.l[0] + 4, 'line', dur(n.l)); });
-  s(HEAD.w[0], 'scratch', dur(HEAD.w));
+  // Fig. 1 cold open: vapour, ignition, lift, whip pan, beeps, the dot that becomes 1957
+  s(36, 'hiss', 2.4); s(T.ignite, 'ignite', 2.2); s(T.lift, 'thud'); s(T.whip - 6, 'whoosh');
+  T.beeps.forEach(f => s(f, 'beep')); s(T.peel, 'flip'); s(T.dot - 1, 'tap');
+  s(294, 'ruler', dur([294, 318])); s(322, 'ruler', dur([322, 334])); s(HEAD.w[0], 'scratch', dur(HEAD.w));
+  NOTES.forEach(n => { s(n.w[0], 'scratch', dur(n.w)); s(n.l[0], 'line', dur(n.l)); });
+  GLYPHS.forEach(g => s(g[3], 'scratch', 10 / FPS));
+  // Fig. 2 Apollo 11
+  s(715, 'flip'); s(745, 'hiss', 2.4); s(T.moonTouch, 'touch'); s(832, 'scratch', dur([832, 852])); s(878, 'flip');
+  // Fig. 3 LZ-1
+  s(1262, 'flip'); s(1300, 'ignite', .8); s(T.landBurn, 'ignite', 1); s(T.landBurn + 3, 'hiss', 1); s(T.legs, 'ratchet'); s(T.legs + 6, 'ratchet');
+  s(T.landTouch, 'touch'); s(T.boom, 'boom'); s(1403, 'scratch', dur([1403, 1428])); s(1456, 'flip');
+  // the break-out and the red pen
   s(T.tear, 'tear'); s(T.flip, 'flip'); T.taps.forEach(f => s(f, 'ratchet'));
   s(RED.bracket[0], 'line', dur(RED.bracket)); s(RED.note.w[0], 'scratch', dur(RED.note.w)); s(RED.note.l[0], 'line', dur(RED.note.l));
   s(RED.ring[0], 'line', dur(RED.ring)); s(RED.big.w[0], 'scratch', dur(RED.big.w));
-  s(RED.cell[0], 'line', dur(RED.cell)); s(908, 'tap'); s(RED.q[0], 'scratch', dur(RED.q));
+  s(CAL.txt.w[0], 'scratch', dur(CAL.txt.w));
+  s(RED.cell[0], 'line', dur(RED.cell)); s(RED.q[0], 'scratch', dur(RED.q)); s(T.endCard, 'tap');
   return C.sort((a, b) => a[0] - b[0]);
 })();
 
@@ -19,28 +28,37 @@ const SFX_CUES = (() => {
 const SCORE = (() => {
   const S = [], N = (f, m, d, i, v = 1) => S.push([f, m, d, i, v]);
   const tri = (r, minor) => [r, r + (minor ? 3 : 4), r + 7];
-  // cold open: a faint low D drone under Sputnik
-  [38, 45].forEach(m => N(20, m, 150, 'pad', .45));
+  const CH = [[50], [47, 1], [43], [45]];
+  const chords = (a, b, v = .5, bass = .6) => { for (let f = Math.ceil(a / 60) * 60; f < b; f += 60) { const [r, mi] = CH[(f / 60) % 4]; tri(r, mi).forEach(x => N(f, x + 12, 58, 'pad', v)); if (bass) { N(f, r - 12, 28, 'bass', bass); N(f + 30, r - 5, 26, 'bass', bass * .8); } } };
+  const drums = (a, b, v = .5, hat = 15) => { for (let f = a; f < b; f += 30) N(f, 0, 3, 'kick', v); for (let f = a; f < b; f += hat) N(Math.round(f), 0, 2, 'hat', v * .6); };
+  const arp = (f, v = .7) => [62, 66, 69, 74, 78, 81].forEach((m, i) => N(f + i * 5, m, 40, 'box', v));
+  // cold open: a low D drone under the steppe, a rising fifth at ignition, the orbit arpeggio as the dot lands
+  [38, 45].forEach(m => N(10, m, 240, 'pad', .45));
+  [50, 57, 62].forEach((m, i) => N(T.ignite + i * 8, m, 160, 'pad', .4 + i * .05));
+  arp(T.dot - 6, .5);
   // the race: one plonk for every year that ticks past, pitched by that year's world total (D major pentatonic)
   const PENTA = [0, 2, 4, 7, 9];
   for (let F = 1; F < TOTAL; F++) {
     const a = Math.floor(yearPos(F - 1) + 1e-6), b = Math.floor(yearPos(F) + 1e-6);
     for (let y = a + 1; y <= b; y++) { const st = Math.round(D.world[y] / 324 * 14); N(F, 62 + 12 * Math.floor(st / 5) + PENTA[st % 5], 10, 'plonk', y === NY - 2 ? 1 : .6); }
   }
-  if (true) N(190, 62, 10, 'plonk', .6); // 1957 itself
-  const CH = [[50], [47, 1], [43], [45]];
-  for (let f = 170, c = 0; f < 830; f += 60, c++) {
-    const [r, mi] = CH[c % 4]; tri(r, mi).forEach(x => N(f, x + 12, 58, 'pad', .5));
-    N(f, r - 12, 28, 'bass', .7); N(f + 30, r - 5, 26, 'bass', .55);
-  }
-  for (let f = 200; f < 676; f += f < 640 ? 15 : 7.5) N(f, 0, 2, 'hat', f < 640 ? .3 : .5);
-  for (let f = 200; f < 640; f += 30) N(f, 0, 3, 'kick', .55);
-  for (let f = 640; f < 676; f += 7.5) N(f, 62 + Math.floor((f - 640) / 7.5), 5, 'pluck', .35 + (f - 640) / 90);
-  for (let f = 696; f < 830; f += 15) { N(f, 0, 3, 'kick', 1); N(f + 7.5, 0, 2, 'hat', .55); }
-  // silence 840-870, then the resolve
-  [[870, 50, 0], [930, 47, 1], [990, 43, 0]].forEach(([f, r, mi]) => { tri(r, mi).forEach(x => N(f, x + 12, 58, 'pad', .55)); N(f, r - 12, 50, 'bass', .5); });
-  [62, 66, 69, 74, 78, 81].forEach((m, i) => N(1044 + i * 5, m, 40, 'box', .7));
-  [38, 50, 57, 62].forEach(m => N(1050, m, 84, 'pad', .6));
+  N(352, 62, 10, 'plonk', .6); // 1957 itself
+  chords(300, 700, .45, .5); drums(360, 690, .35, 30);
+  // Apollo: drums out, wonder; a music-box arpeggio on touchdown
+  chords(720, 900, .4, 0); arp(T.moonTouch, .7);
+  chords(900, 1250, .48, .6); drums(900, 1240, .45);
+  // LZ-1: a bass pulse that speeds up into the landing burn, the arpeggio on touchdown
+  [38, 45, 50].forEach(m => N(1266, m, 130, 'pad', .45));
+  for (let f = 1296, g = 20; f < T.landBurn; f += g, g = Math.max(6, g - 1.2)) N(Math.round(f), 38, 5, 'bass', .45);
+  N(T.landBurn, 26, 30, 'bass', .8); arp(T.landTouch, .8); [50, 54, 57].forEach(m => N(T.landTouch, m + 12, 70, 'pad', .5));
+  // build to the tear
+  chords(1470, T.tear, .5, .6); drums(1500, T.tear - 30, .5);
+  for (let i = 0; i < 8; i++) N(T.tear - 30 + Math.round(i * 3.75), 62 + [0, 2, 4, 7, 9, 12, 14, 16][i], 4, 'pluck', .4 + i * .07);
+  chords(T.tear, 1745, .6, .8); drums(T.tear, 1740, 1, 7.5);
+  // the red pen: half time under the reveal, then the resolve
+  chords(1745, 1905, .45, .55); drums(1750, 1900, .45, 30);
+  [[1920, 50], [1950, 43]].forEach(([f, r]) => { tri(r).forEach(x => N(f, x + 12, 58, 'pad', .55)); N(f, r - 12, 50, 'bass', .5); });
+  arp(T.endCard + 8, .7); [38, 50, 57, 62].forEach(m => N(1930, m, 75, 'pad', .6));
   return S.sort((a, b) => a[0] - b[0]);
 })();
 const MIDI = m => 440 * Math.pow(2, (m - 69) / 12);
@@ -104,6 +122,10 @@ function sfx(name, arg) {
   if (name === 'tear') { for (let i = 0; i < 14; i++) route(nz(i * .016 + Math.random() * .006, .025, 'bandpass', 1400 + Math.random() * 3200, 1.4, .22, .001), 1, .2); route(nz(0, .3, 'lowpass', 700, .7, .2, .005), 1, .3); const o = osc('sine', 90, t, .4); o.frequency.exponentialRampToValueAtTime(38, t + .3); const g = ctx.createGain(); env(g, t, .003, .5, .32); o.connect(g); route(g, 1, .3); }
   if (name === 'flip') { for (let i = 0; i < 5; i++) route(nz(i * .045, .07, 'bandpass', 1800 + i * 500, 1.2, .18 - i * .025, .003), 1, .15); route(nz(0, .3, 'lowpass', 900, .7, .1, .05), 1); }
   if (name === 'ratchet') { route(nz(0, .02, 'highpass', 2500, 1, .35, .001), 1); route(nz(.04, .02, 'bandpass', 3000, 3, .15, .001), 1); const o = osc('square', 1700, t, .04), g = ctx.createGain(); env(g, t, .001, .03, .03); o.connect(filt('lowpass', 3500)).connect(g); route(g, 1, .2); }
+  if (name === 'hiss') { const n = noiseSrc(t, len + .3), g = ctx.createGain(), bp = filt('bandpass', 5200, .7); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.045, t + .25); g.gain.setValueAtTime(.045, t + Math.max(.3, len - .4)); g.gain.exponentialRampToValueAtTime(.0001, t + len); n.connect(bp).connect(g); route(g, 1, .3); }
+  if (name === 'ignite') { const n = noiseSrc(t, len + .4), lp = filt('lowpass', 260, .8), g = ctx.createGain(); lp.frequency.exponentialRampToValueAtTime(900, t + .35); lp.frequency.exponentialRampToValueAtTime(380, t + len); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.45, t + .12); g.gain.setValueAtTime(.38, t + len * .6); g.gain.exponentialRampToValueAtTime(.0001, t + len + .3); n.connect(lp).connect(g); route(g, 1, .35); route(nz(0, .25, 'bandpass', 1400, 1, .12, .002), 1, .2); const o = osc('sine', 55, t, len + .3), go = ctx.createGain(); env(go, t, .05, .22, len); o.connect(go); route(go, 1); }
+  if (name === 'boom') [0, .24].forEach((d, i) => { const o = osc('sine', 80, t + d, .5); o.frequency.exponentialRampToValueAtTime(34, t + d + .35); const g = ctx.createGain(); env(g, t + d, .003, .55 - i * .1, .4); o.connect(g); route(g, 1, .4); route(nz(d, .12, 'lowpass', 600, .7, .3 - i * .05, .002), 1, .4); });
+  if (name === 'touch') { const o = osc('sine', 70, t, .35); o.frequency.exponentialRampToValueAtTime(36, t + .25); const g = ctx.createGain(); env(g, t, .003, .4, .28); o.connect(g); route(g, 1, .25); route(nz(.01, .5, 'lowpass', 900, .6, .14, .02), 1, .3); }
 }
 
 // Offline render of the full soundtrack (used by export.py and av_check) -> base64 16-bit stereo WAV. Math.random seeded for determinism.

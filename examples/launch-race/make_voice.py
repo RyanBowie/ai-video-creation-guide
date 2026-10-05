@@ -14,12 +14,15 @@ TAIL = 0.06  # seconds kept after the last audible sample (edge-tts pads ~0.35s 
 NARRATOR = dict(voice="en-GB-RyanNeural", rate="+2%", pitch="+0Hz")
 
 LINES = {
-    "sputnik": (NARRATOR, "October, nineteen fifty-seven. One small beep from orbit."),
-    "race":    (NARRATOR, "Ten years on, the Soviet Union leads the race."),
-    "fall":    (NARRATOR, "Then the Soviet Union ends... and so does the boom."),
-    "china":   (NARRATOR, "Twenty eighteen. China takes the lead."),
+    "sputnik": (NARRATOR, "October, nineteen fifty-seven. A Soviet R seven rocket lifts off... and one small beep from orbit starts the space age."),
+    "fail":    (NARRATOR, "At first, most rockets failed. In nineteen fifty-eight, twenty of twenty-eight never reached orbit."),
+    "gagarin": (NARRATOR, "Nineteen sixty-one. Yuri Gagarin becomes the first person in orbit."),
+    "apollo":  (NARRATOR, "July, nineteen sixty-nine. Apollo eleven lands on the Moon."),
+    "soviet":  (NARRATOR, "The Soviet Union flies the most, peaking at a hundred and eight launches in nineteen eighty-two."),
+    "fall":    (NARRATOR, "Then the U S S R ends... and for twenty-five years, launches stay low."),
+    "landing": (NARRATOR, "December, twenty fifteen. A booster flies back... and lands."),
     "falcon":  (NARRATOR, "Then one rocket breaks the chart. Falcon 9 flew nine in ten American launches."),
-    "end":     (NARRATOR, "Three hundred and twenty-four launches in one year. The next cell is still empty."),
+    "end":     (NARRATOR, "Three hundred and twenty-four launches in a single year. The next cell is still empty."),
 }
 
 def trim(mp3):
