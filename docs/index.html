@@ -24,9 +24,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark light">
 <title>AI Video Creation Guide · Make animated videos with one prompt</title>
-<meta name="description" content="Community guide to making code-drawn animated videos with Claude Opus 5.5 in the GitHub Copilot app: a step-by-step setup, a starter prompt, three example videos with their prompts and source, and reusable Copilot skills.">
+<meta name="description" content="Community guide to making code-drawn animated videos with Claude Opus 5.5 in the GitHub Copilot app: a step-by-step setup, a starter prompt, four example videos with their prompts and source, and reusable Copilot skills.">
 <meta property="og:title" content="AI Video Creation Guide">
-<meta property="og:description" content="Community guide to making code-drawn animated videos with Claude Opus 5.5 in the GitHub Copilot app: a step-by-step setup, a starter prompt, three example videos with their prompts and source, and reusable Copilot skills.">
+<meta property="og:description" content="Community guide to making code-drawn animated videos with Claude Opus 5.5 in the GitHub Copilot app: a step-by-step setup, a starter prompt, four example videos with their prompts and source, and reusable Copilot skills.">
 <meta property="og:type" content="website">
 <!-- dl-meta:start -->
 <meta property="og:url" content="https://ryanbowie.github.io/ai-video-creation-guide/">
@@ -36,7 +36,7 @@
 <meta property="og:image:alt" content="AI Video Creation Guide: make animated videos with one prompt, using Claude Opus 5.5 in the GitHub Copilot app. A community project.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="AI Video Creation Guide">
-<meta name="twitter:description" content="Community guide to making code-drawn animated videos with Claude Opus 5.5 in the GitHub Copilot app: a step-by-step setup, a starter prompt, three example videos with their prompts and source, and reusable Copilot skills.">
+<meta name="twitter:description" content="Community guide to making code-drawn animated videos with Claude Opus 5.5 in the GitHub Copilot app: a step-by-step setup, a starter prompt, four example videos with their prompts and source, and reusable Copilot skills.">
 <meta name="twitter:image" content="https://ryanbowie.github.io/ai-video-creation-guide/media/og.png">
 <!-- dl-meta:end -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2028%2028'%3E%3Crect%20width='28'%20height='28'%20rx='7'%20fill='%237653ae'/%3E%3Cpath%20d='M11%208.5v11l8.5-5.5z'%20fill='none'%20stroke='%23fff'%20stroke-width='2.5'%20stroke-linejoin='round'/%3E%3C/svg%3E">
@@ -576,8 +576,8 @@ kbd { padding: 1px 6px; border: 1px solid var(--cp-border-strong); border-bottom
       </figure>
       <!-- dl-hero:end -->
       <ul class="facts" aria-label="At a glance">
-        <li><strong>3 example videos</strong><span>All watchable; two with full source</span></li>
-        <li><strong>7 reusable skills</strong><span>Engines, cast, style rules and gotchas</span></li>
+        <li><strong>4 example videos</strong><span>All watchable; three with full source</span></li>
+        <li><strong>8 reusable skills</strong><span>Engines, cast, style rules and gotchas</span></li>
         <li><strong>1 prompt template</strong><span>Three inputs: context, references, sources</span></li>
         <li><strong>6 setup steps</strong><span>From install to your first MP4</span></li>
         <li><strong>Opus 5.5</strong><span>With reasoning effort set to High</span></li>
@@ -654,7 +654,7 @@ kbd { padding: 1px 6px; border: 1px solid var(--cp-border-strong); border-bottom
         <li><strong>[Reference Videos]</strong>: screenshots, MP4s or links to videos and repos whose look you like, and what you like about each.</li>
         <li><strong>[Extra Sources]</strong> (optional): documents, brand assets, a script, music you have the rights to, or facts to get right.</li>
       </ul>
-      <p>It also points Copilot at three public repos to learn from: <a href="https://github.com/JohnHeibel/PDoomVideo">JohnHeibel/PDoomVideo</a> for advanced code-driven animation, <a href="https://github.com/lemomo-ai/lemo-opuscar">lemomo-ai/lemo-opuscar</a> for 43 reusable film styles, and this repo, <a href="https://github.com/RyanBowie/ai-video-creation-guide">RyanBowie/ai-video-creation-guide</a>, for the example videos and the skills behind them.</p>
+      <p>It also points Copilot at four public repos to learn from: <a href="https://github.com/JohnHeibel/PDoomVideo">JohnHeibel/PDoomVideo</a> for advanced code-driven animation, <a href="https://github.com/lemomo-ai/lemo-opuscar">lemomo-ai/lemo-opuscar</a> for 43 reusable film styles, <a href="https://github.com/francozanardi/papermotion">francozanardi/papermotion</a> for paper-cutout shorts made in code, and this repo, <a href="https://github.com/RyanBowie/ai-video-creation-guide">RyanBowie/ai-video-creation-guide</a>, for the example videos and the skills behind them.</p>
       <div class="code-box prompt-box"><code id="prompt-text">I want you to build a short animated video, drawn entirely in code, that brings the context below to life. To start with, keep it under about 30 seconds so I can review it, and produce it as an MP4.
 
 Everything in square brackets below is my input. Treat it as the brief.
@@ -670,7 +670,8 @@ Study my references to understand what makes them work: the art style, colour pa
 You can also learn from these public community repos:
 - JohnHeibel/PDoomVideo (https://github.com/JohnHeibel/PDoomVideo): the source code for the Claude Opus 5.5 music video "I'm Upping My P(doom)", an example of advanced code-driven animation synced to music.
 - lemomo-ai/lemo-opuscar (https://github.com/lemomo-ai/lemo-opuscar): 43 film styles, each a reusable style prompt plus a short film made entirely in code.
-- RyanBowie/ai-video-creation-guide (https://github.com/RyanBowie/ai-video-creation-guide): example videos made with this prompt (a music video, a 90s cel-anime short and a 16 mm explorer film) plus the reusable Copilot skills behind them, covering motion graphics, character rigs, retro anime, voiceover, audio editing and checking the picture lines up with the sound.
+- francozanardi/papermotion (https://github.com/francozanardi/papermotion): paper-cutout animated shorts made entirely in code by AI agents.
+- RyanBowie/ai-video-creation-guide (https://github.com/RyanBowie/ai-video-creation-guide): example videos made with this prompt (a music video, a 90s cel-anime short, a 16 mm explorer film and a paper-cutout RPG short) plus the reusable Copilot skills behind them, covering motion graphics, character rigs, retro anime, paper cutouts, voiceover, audio editing and checking the picture lines up with the sound.
 
 There are also many other reference repos that show different designs and styles. Go through my references and these repos to decide the most appropriate style for my context. Briefly tell me which style you picked and why, then carry on.
 
@@ -696,7 +697,7 @@ Take your time with the generation. Think creatively and make this something rea
       <p>Append any of these to the prompt.</p>
       <div class="grid-2">
         <div class="card"><p><span class="badge badge-accent">Skills</span></p><p>“Load the skills in ~/.copilot/skills and use whichever fit the style you pick.” See <a href="#skills">Reusable skills</a>.</p></div>
-        <div class="card"><p><span class="badge badge-accent">Lock a look</span></p><p>“Use the retro-anime skill” for 90s cel-anime, or “use the explorer-quest skill” for a vintage 16 mm adventure serial.</p></div>
+        <div class="card"><p><span class="badge badge-accent">Lock a look</span></p><p>“Use the retro-anime skill” for 90s cel-anime, “use the explorer-quest skill” for a vintage 16 mm adventure serial, or “use the paper-cutout skill” for a Paper Mario-style paper theatre.</p></div>
         <div class="card"><p><span class="badge badge-accent">Self-review</span></p><p>“Take a contact sheet of stills, check each scene against the brief, and rework anything below the bar.”</p></div>
         <div class="card"><p><span class="badge badge-accent">Check the sync</span></p><p>“Run the av-sync checker on the final MP4 and fix any FAIL findings.”</p></div>
       </div>
@@ -719,6 +720,12 @@ Take your time with the generation. Think creatively and make this something rea
             <span class="link-list"><a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/sofia-explorer/PROMPT.md">Prompt</a><a href="https://github.com/RyanBowie/ai-video-creation-guide/tree/main/examples/sofia-explorer">Source</a><a href="media/sofia-explorer.mp4">Download MP4</a></span>
           </figcaption>
         </figure>
+        <figure class="shot">
+          <video controls preload="none" playsinline width="1280" height="720" poster="media/paper-copilot-poster.jpg" aria-label="Paper Copilot, Chapter 1: The Inbox Quest (30 seconds)"><source src="media/paper-copilot.mp4" type="video/mp4"></video>
+          <figcaption><strong>Paper Copilot, Chapter 1: The Inbox Quest</strong> – A paper theatre with red curtains and an audience row. An office worker buried by a 999+ inbox teams up with his Microsoft 365 Copilot buddy to beat an Inbox Goblin and a Meeting Clash in a turn-based, Paper Mario-style RPG battle, with a Clippy cameo. Inspired by <a href="https://github.com/francozanardi/papermotion">francozanardi/papermotion</a>. <small>30 s · paper cutout and pop-up book · RPG battle · synthesised score and paper SFX</small>
+            <span class="link-list"><a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/paper-copilot/PROMPT.md">Prompt</a><a href="https://github.com/RyanBowie/ai-video-creation-guide/tree/main/examples/paper-copilot">Source</a><a href="media/paper-copilot.mp4">Download MP4</a></span>
+          </figcaption>
+        </figure>
       </div>
       <h3>Behind the scenes</h3>
       <div class="gallery">
@@ -729,6 +736,14 @@ Take your time with the generation. Think creatively and make this something rea
         <figure class="shot">
           <a class="shot-btn" href="media/sofia-explorer-contact.jpg"><img src="media/sofia-explorer-contact.jpg" width="1920" height="720" loading="lazy" decoding="async" alt="Sofia Explorer contact sheet: stills from the map route, the jungle temple and the title card."><span class="visually-hidden"> (enlarge)</span></a>
           <figcaption><strong>Sofia Explorer</strong> – A contact sheet Copilot uses to review its own work. <small>Ask for one in your prompt</small></figcaption>
+        </figure>
+        <figure class="shot">
+          <a class="shot-btn" href="media/paper-copilot-battle.jpg"><img src="media/paper-copilot-battle.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Paper Copilot still: the paper hero and the Copilot buddy beat a paper Inbox Goblin and Meeting Clash on a night-city stage, with an EXCELLENT sticker."><span class="visually-hidden"> (enlarge)</span></a>
+          <figcaption><strong>Paper Copilot</strong> – The RPG battle, with an action-command stamp. <small>Rendered at 1920 × 1080, 30 fps</small></figcaption>
+        </figure>
+        <figure class="shot">
+          <a class="shot-btn" href="media/paper-copilot-victory.jpg"><img src="media/paper-copilot-victory.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Paper Copilot still: a VICTORY banner and a paper quest report reading Inbox 999+ to 0, meetings sorted and plus three hours back, with Clippy in the audience."><span class="visually-hidden"> (enlarge)</span></a>
+          <figcaption><strong>Paper Copilot</strong> – The victory screen and quest report. <small>Sticker lettering with a white paper rim</small></figcaption>
         </figure>
       </div>
     </section>
@@ -781,6 +796,7 @@ Copy-Item .\skills\* "$env:USERPROFILE\.copilot\skills\" -Recurse -Force</code><
             <tr><th scope="row"><code>character-rig</code></th><td>The papery watercolour Canvas cast (Copilot idol, Office dancers, Clippy and more) and a beat-synced music-video engine.</td></tr>
             <tr><th scope="row"><code>retro-anime</code></th><td>A 90s cel-anime, arcade and visual-novel look with a CRT pass. The Sofia Retro engine.</td></tr>
             <tr><th scope="row"><code>explorer-quest</code></th><td>A vintage explorer and adventure-serial look with a 16 mm film pass and a parchment world map. The Sofia Explorer engine.</td></tr>
+            <tr><th scope="row"><code>paper-cutout</code></th><td>A paper-cutout, Paper Mario-style paper theatre with torn edges, sticker lettering, card flips and a turn-based RPG battle kit. The Paper Copilot engine.</td></tr>
             <tr><th scope="row"><code>tts-voiceover</code></th><td>Voiceover with Edge neural voices and word timings.</td></tr>
             <tr><th scope="row"><code>audio-edit</code></th><td>Cutting and fading songs and voiceover without clicks, while keeping the animation in sync.</td></tr>
             <tr><th scope="row"><code>av-sync</code></th><td>Checking that the visuals line up with the voiceover, sound effects and beats.</td></tr>
@@ -806,7 +822,7 @@ python -m http.server 8000</code><button type="button" class="btn btn-sm copy-bt
           <div class="code-box"><code id="run-render">python export_mp4.py
 python stills.py 5 20 40
 python make_voice.py</code><button type="button" class="btn btn-sm copy-btn" data-copy-target="run-render" data-jsonly hidden>Copy</button></div>
-          <p>Renders 1920 × 1080 at 30 fps, grabs stills at the given seconds and regenerates the voiceover. The same works in <code>examples\sofia-explorer</code>.</p>
+          <p>Renders 1920 × 1080 at 30 fps, grabs stills at the given seconds and regenerates the voiceover. The same works in <code>examples\sofia-explorer</code>. In <code>examples\paper-copilot</code>, open <code>paper-copilot.html</code> and run <code>python export.py</code>.</p>
         </div>
       </div>
     </section>
@@ -819,6 +835,7 @@ python make_voice.py</code><button type="button" class="btn btn-sm copy-btn" dat
         <li><strong>donald (@donaldjewkes)</strong>: the <a href="https://x.com/donaldjewkes/status/2102801274173587569">one-prompt Opus 5.5 video prompt</a> the P(doom) remake was adapted from.</li>
         <li><strong>Song</strong>: &ldquo;I&#39;m Upping My P(doom)&rdquo;, lyrics by <a href="https://docs.osmarks.net/hypha/p%28doom%29_song_objectively_correct_interpretation">osmarks</a>, built on an opening verse and chorus by MusicPerson, with lines from the EleutherAI Discord and help from Claude. Originally generated with Udio (November 2024); the &ldquo;Claude-Pop&rdquo; version is by <a href="https://x.com/slimer48484/status/2097752569212756134">deckard (@slimer48484)</a>. The song and lyrics belong to their authors and aren&#39;t covered by this repo&#39;s licence; the remake is shared silent.</li>
         <li><strong>LemoLab</strong>: <a href="https://github.com/lemomo-ai/lemo-opuscar">lemomo-ai/lemo-opuscar</a> (MIT), the film-style references. Parts of the Sofia engines are adapted from it; see each example's <code>THIRD_PARTY_NOTICES.md</code>.</li>
+        <li><strong>Franco Zanardi</strong>: <a href="https://github.com/francozanardi/papermotion">francozanardi/papermotion</a> (MIT), paper-cutout shorts made in code. The style reference for Paper Copilot; its engine was written from scratch and uses none of that code.</li>
         <li><strong>Natural Earth</strong> (public domain): the world map coastlines in Sofia Explorer.</li>
         <li><strong>Voiceovers</strong>: Microsoft Edge neural TTS through <a href="https://github.com/rany2/edge-tts">edge-tts</a>.</li>
       </ul>
