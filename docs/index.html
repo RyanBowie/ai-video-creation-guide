@@ -575,7 +575,7 @@ kbd { padding: 1px 6px; border: 1px solid var(--cp-border-strong); border-bottom
       </figure>
       <!-- dl-hero:end -->
       <ul class="facts" aria-label="At a glance">
-        <li><strong>3 example videos</strong><span>Two with full source, one with prompt and stills</span></li>
+        <li><strong>3 example videos</strong><span>All watchable; two with full source</span></li>
         <li><strong>7 reusable skills</strong><span>Engines, cast, style rules and gotchas</span></li>
         <li><strong>1 prompt template</strong><span>Fill in two placeholders</span></li>
         <li><strong>6 setup steps</strong><span>From install to your first MP4</span></li>
@@ -596,7 +596,7 @@ kbd { padding: 1px 6px; border: 1px solid var(--cp-border-strong); border-bottom
       <ul>
         <li><strong>Everything is generated code.</strong> Copilot wrote the engines, characters, music and voiceover scripts. Read it before you run it, as you would any code from the internet.</li>
         <li><strong>The characters are fictional.</strong> Sofia and her colleagues aren't real people. Microsoft product names and logos appear as fan references.</li>
-        <li><strong>Respect other people's work.</strong> The P(doom) remake shares only the prompt and stills, because the song isn't ours to redistribute. Do the same with any music or artwork you don't own.</li>
+        <li><strong>Respect other people's work.</strong> The P(doom) remake is shared silent, with full credits, because the song isn't ours to redistribute. Do the same with any music or artwork you don't own.</li>
       </ul>
     </section>
 
@@ -706,13 +706,19 @@ Take your time with the generation. Think creatively and make this something rea
     </section>
 
     <section class="section" id="pdoom" aria-labelledby="pdoom-h">
-      <p class="section-kicker">Prompt and stills only</p>
+      <p class="section-kicker">Silent cut, prompt and stills</p>
       <h2 id="pdoom-h">Copilot Pop: an “I'm Upping My P(doom)” remake</h2>
       <p>A Copilot pop idol, Office backing dancers, Clippy and a cute masked shoggoth, remaking the original music video in a papery watercolour, boiling-ink style, synced to the beat. It was adapted from a one-prompt Opus 5.5 video prompt shared by <a href="https://x.com/donaldjewkes/status/2102801274173587569">@donaldjewkes</a>.</p>
       <div class="callout callout-info" role="note">
-        <p class="callout-title"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Why there's no video here</p>
-        <p>The song isn't ours to redistribute, so only the prompt and two stills are shared. <a href="https://youtu.be/8j-hR4fJywU">Watch the original video</a> and see <a href="https://github.com/JohnHeibel/PDoomVideo">its source code</a> instead.</p>
+        <p class="callout-title"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Why it's silent</p>
+        <p>The song isn't ours to redistribute, so the full remake is shared without audio. The lyrics still appear on screen and belong to their authors (see <a href="#credits">credits</a>). Play the <a href="https://www.youtube.com/watch?v=uEB5E67vcPA">song</a> alongside it, or <a href="https://youtu.be/8j-hR4fJywU">watch John Heibel's original video</a> with sound.</p>
       </div>
+      <figure class="shot">
+        <video controls preload="none" playsinline width="1280" height="720" poster="media/copilot-pop-poster.jpg" aria-label="Copilot Pop: I'm Upping My P(doom) remake, silent (2 minutes 34 seconds)"><source src="media/copilot-pop.mp4" type="video/mp4"></video>
+        <figcaption><strong>Copilot Pop (silent)</strong> &ndash; The full remake, beat-synced to the song, with karaoke lyrics and word pops on screen. <small>2:34 &middot; papery watercolour and boiling ink &middot; 1280 &times; 720, 30 fps &middot; no audio</small>
+          <span class="link-list"><a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/prompts/pdoom-prompt.md">Prompt</a><a href="media/copilot-pop.mp4">Download MP4</a></span>
+        </figcaption>
+      </figure>
       <div class="gallery">
         <figure class="shot">
           <a class="shot-btn" href="media/pdoom-title.jpg"><img src="media/pdoom-title.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Copilot Pop title card in a papery watercolour style."><span class="visually-hidden"> (enlarge)</span></a>
@@ -726,6 +732,7 @@ Take your time with the generation. Think creatively and make this something rea
       <ul class="link-list">
         <li><a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/prompts/pdoom-prompt.md">The prompt</a></li>
         <li><a href="https://youtu.be/8j-hR4fJywU">Original video</a></li>
+        <li><a href="https://www.youtube.com/watch?v=uEB5E67vcPA">The song</a></li>
         <li><a href="https://github.com/JohnHeibel/PDoomVideo">Original source</a></li>
       </ul>
     </section>
@@ -782,6 +789,7 @@ python make_voice.py</code><button type="button" class="btn btn-sm copy-btn" dat
       <ul>
         <li><strong>John Heibel</strong>: <a href="https://github.com/JohnHeibel/PDoomVideo">JohnHeibel/PDoomVideo</a>, the original “I'm Upping My P(doom)” video and code that inspired all of this.</li>
         <li><strong>donald (@donaldjewkes)</strong>: the <a href="https://x.com/donaldjewkes/status/2102801274173587569">one-prompt Opus 5.5 video prompt</a> the P(doom) remake was adapted from.</li>
+        <li><strong>Song</strong>: &ldquo;I&#39;m Upping My P(doom)&rdquo;, lyrics by <a href="https://docs.osmarks.net/hypha/p%28doom%29_song_objectively_correct_interpretation">osmarks</a>, built on an opening verse and chorus by MusicPerson, with lines from the EleutherAI Discord and help from Claude. Originally generated with Udio (November 2024); the &ldquo;Claude-Pop&rdquo; version is by <a href="https://x.com/slimer48484/status/2097752569212756134">deckard (@slimer48484)</a>. The song and lyrics belong to their authors and aren&#39;t covered by this repo&#39;s licence; the remake is shared silent.</li>
         <li><strong>LemoLab</strong>: <a href="https://github.com/lemomo-ai/lemo-opuscar">lemomo-ai/lemo-opuscar</a> (MIT), the film-style references. Parts of the Sofia engines are adapted from it; see each example's <code>THIRD_PARTY_NOTICES.md</code>.</li>
         <li><strong>Natural Earth</strong> (public domain): the world map coastlines in Sofia Explorer.</li>
         <li><strong>Voiceovers</strong>: Microsoft Edge neural TTS through <a href="https://github.com/rany2/edge-tts">edge-tts</a>.</li>

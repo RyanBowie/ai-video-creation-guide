@@ -14,7 +14,7 @@ Every frame is drawn in code (HTML Canvas, SVG and WebGL) and rendered to MP4 wi
 |---|---|---|---|---|
 | [Copilot Quest, Episode 1: Enter Copilot](docs/media/sofia-retro.mp4) | 90s cel-anime / arcade, CRT finish, chiptune | 89.5 s | [PROMPT.md](examples/sofia-retro/PROMPT.md) | [examples/sofia-retro](examples/sofia-retro) |
 | [The Great Copilot Quest, Chapter One](docs/media/sofia-explorer.mp4) | Vintage explorer / adventure serial, 16 mm film, parchment map | 26 s | [PROMPT.md](examples/sofia-explorer/PROMPT.md) | [examples/sofia-explorer](examples/sofia-explorer) |
-| Copilot Pop: *I'm Upping My P(doom)* remake | Papery watercolour, boiling ink, K-pop music video | n/a | [pdoom-prompt.md](prompts/pdoom-prompt.md) | [Prompt and stills only](examples/pdoom/README.md) |
+| [Copilot Pop: *I'm Upping My P(doom)* remake](docs/media/copilot-pop.mp4) (silent) | Papery watercolour, boiling ink, K-pop music video | 2:34 | [pdoom-prompt.md](prompts/pdoom-prompt.md) | [Prompt, stills and credits](examples/pdoom/README.md) |
 
 ## Guide to video creation
 
@@ -79,6 +79,7 @@ The same works in `examples\sofia-explorer` with `sofia-explorer.html`. `make_vo
 
 - **JohnHeibel/PDoomVideo** by John Heibel: the original *I'm Upping My P(doom)* video and code that inspired all of this. https://github.com/JohnHeibel/PDoomVideo
 - **donald (@donaldjewkes)**: the one-prompt Opus 5.5 video prompt the P(doom) remake was adapted from. https://x.com/donaldjewkes/status/2102801274173587569
+- **Song:** *I'm Upping My P(doom)*. Lyrics by [osmarks](https://docs.osmarks.net/hypha/p%28doom%29_song_objectively_correct_interpretation), built on an opening verse and chorus by MusicPerson, with lines from the EleutherAI Discord and help from Claude. Originally generated with Udio (November 2024, [YouTube](https://www.youtube.com/watch?v=uEB5E67vcPA)); the "Claude-Pop" version is by [deckard (@slimer48484)](https://x.com/slimer48484/status/2097752569212756134). The song and lyrics belong to their authors and aren't covered by this repo's licence. The remake is shared silent.
 - **lemomo-ai/lemo-opuscar** by LemoLab (MIT): film-style references. Parts of the Sofia engines are adapted from it; see each example's `THIRD_PARTY_NOTICES.md`.
 - **Natural Earth** (public domain): the world map coastlines in Sofia Explorer.
 - Voiceovers: Microsoft Edge neural TTS via [edge-tts](https://github.com/rany2/edge-tts).
