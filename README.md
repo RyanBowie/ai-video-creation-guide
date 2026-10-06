@@ -4,7 +4,7 @@ How I made animated videos with the **GitHub Copilot app** and **Claude Opus 5.5
 
 **Website:** https://ryanbowie.github.io/ai-video-creation-guide/
 
-Every frame is drawn in code (HTML Canvas, SVG and WebGL) and rendered to MP4 with headless Edge and ffmpeg. There's no paid image or video generation and no npm. The music and sound effects are synthesised in code, and voiceovers use Microsoft Edge neural TTS.
+Every frame is drawn in code (HTML Canvas, SVG and WebGL) and rendered to MP4 with headless Edge and ffmpeg. There's no paid image or video generation and no npm. The music and sound effects are synthesised in code, and voiceovers use Microsoft Edge neural TTS or one of the free TTS engines compared in *Eight free AI voices*.
 
 > **Community project, not a Microsoft product.** This is a personal side project shared as is, under the MIT licence. It isn't supported, endorsed or maintained by Microsoft or GitHub.
 
@@ -16,6 +16,7 @@ Every frame is drawn in code (HTML Canvas, SVG and WebGL) and rendered to MP4 wi
 | [The Great Copilot Quest, Chapter One](docs/media/sofia-explorer.mp4) | Vintage explorer / adventure serial, 16 mm film, parchment map | 26 s | [PROMPT.md](examples/sofia-explorer/PROMPT.md) | [examples/sofia-explorer](examples/sofia-explorer) |
 | [Paper Copilot, Chapter 1: The Inbox Quest](docs/media/paper-copilot.mp4) | Paper cutout / Paper Mario-style paper theatre, turn-based RPG battle | 30 s | [PROMPT.md](examples/paper-copilot/PROMPT.md) | [examples/paper-copilot](examples/paper-copilot) |
 | [One rocket breaks the chart](docs/media/launch-race.mp4) | Data storytelling: a hand-annotated bar race on paper ([lemo-opuscar dataviz style](https://github.com/lemomo-ai/lemo-opuscar/blob/main/styles/dataviz/STYLE.md)) | 67 s | [PROMPT.md](examples/launch-race/PROMPT.md) | [examples/launch-race](examples/launch-race) |
+| [Eight free AI voices, one sentence](docs/media/voice-showcase.mp4) | Motion-graphics explainer: 8 free text-to-speech engines take turns on one sentence, then a wall of GPU models | 2:08 | [PROMPT.md](examples/voice-showcase/PROMPT.md) | [examples/voice-showcase](examples/voice-showcase) |
 | [Sofia Return: Copilot Quest, Episode 1](docs/media/sofia-return.mp4) (original cut) | Papery watercolour, boiling ink, office cast with Microsoft 365 UI | 93 s | [PROMPT.md](examples/sofia-return/PROMPT.md) | [examples/sofia-return](examples/sofia-return) |
 | [Copilot Pop: *I'm Upping My P(doom)* remake](docs/media/copilot-pop.mp4) (silent) | Papery watercolour, boiling ink, K-pop music video | 2:34 | [pdoom-prompt.md](prompts/pdoom-prompt.md) | [Prompt, stills and credits](examples/pdoom/README.md) |
 
@@ -77,7 +78,7 @@ python -m http.server 8000          # then open http://localhost:8000/sofia-retr
 python export_mp4.py                # renders sofia-retro.mp4 (1920x1080, 30 fps)
 ```
 
-The same works in `examples\sofia-explorer` with `sofia-explorer.html`, and in `examples\sofia-return` with `sofia-return.html` (`python export_mp4.py sofia-return.html`). In `examples\paper-copilot`, open `paper-copilot.html` and run `python export.py` (`python export.py --stills 140 450` grabs stills at those frames). In `examples\launch-race`, run `python build_data.py` (refreshes `data.js` from GCAT) and then `python export.py`. `make_voice.py` regenerates the voiceover (`voice.js`) and `stills.py` takes stills at given times.
+The same works in `examples\sofia-explorer` with `sofia-explorer.html`, and in `examples\sofia-return` with `sofia-return.html` (`python export_mp4.py sofia-return.html`). In `examples\paper-copilot`, open `paper-copilot.html` and run `python export.py` (`python export.py --stills 140 450` grabs stills at those frames). In `examples\launch-race`, run `python build_data.py` (refreshes `data.js` from GCAT) and then `python export.py`. In `examples\voice-showcase`, run `python export_mp4.py`. The voice clips are already bundled in `voice.js`. To regenerate them, run `python make_voices.py` (it needs each engine installed; see its docstring) and then `python assemble.py`. In the other examples, `make_voice.py` regenerates the voiceover (`voice.js`) and `stills.py` takes stills at given times.
 
 ## Credits
 
@@ -89,6 +90,7 @@ The same works in `examples\sofia-explorer` with `sofia-explorer.html`, and in `
 - **francozanardi/papermotion** by Franco Zanardi (MIT): paper-cutout shorts made in code, the style reference for Paper Copilot. Its engine was written from scratch and uses none of that code.
 - **Natural Earth** (public domain): the world map coastlines in Sofia Explorer.
 - Voiceovers: Microsoft Edge neural TTS via [edge-tts](https://github.com/rany2/edge-tts).
+- **Free TTS engines** heard in *Eight free AI voices*: Windows SAPI, [Piper](https://github.com/OHF-Voice/piper1-gpl), [Kitten TTS](https://github.com/KittenML/KittenTTS), [Kokoro-82M](https://github.com/hexgrad/kokoro) (via [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx)), [Supertonic](https://github.com/supertone-oss-archive/supertonic), [Pocket TTS](https://github.com/kyutai-labs/pocket-tts), [Chatterbox](https://github.com/resemble-ai/chatterbox) and [edge-tts](https://github.com/rany2/edge-tts). Every clip stays under its model's and voice's licence; some are non-commercial (for example the Piper `ryan` voice). See [its THIRD_PARTY_NOTICES.md](examples/voice-showcase/THIRD_PARTY_NOTICES.md), which also links the 21 GPU models named in the video.
 
 Sofia and her colleagues are fictional characters. Microsoft, Copilot, Office, Clippy and related names and logos are trademarks of Microsoft. They appear here as fan references in a non-commercial community project.
 

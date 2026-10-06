@@ -1,0 +1,224 @@
+{
+ "r_sapi": {
+  "engine": "sapi",
+  "voice": "Microsoft David Desktop",
+  "text": "This one sentence",
+  "dur": 1.227
+ },
+ "r_piper": {
+  "engine": "piper",
+  "voice": "en_US-ryan-high",
+  "text": "gets passed along",
+  "dur": 1.188
+ },
+ "r_kitten": {
+  "engine": "kitten",
+  "voice": "expr-voice-3-m",
+  "text": "from one model to the next,",
+  "dur": 2.242
+ },
+ "r_kokoro": {
+  "engine": "kokoro",
+  "voice": "bm_george",
+  "text": "and the next,",
+  "dur": 1.095
+ },
+ "r_super": {
+  "engine": "supertonic",
+  "voice": "F2",
+  "text": "and the next,",
+  "dur": 0.783
+ },
+ "r_pocket": {
+  "engine": "pocket",
+  "voice": "alba",
+  "text": "and the next,",
+  "dur": 0.912
+ },
+ "r_cb": {
+  "engine": "chatterbox",
+  "voice": "default",
+  "text": "to show you how different",
+  "dur": 1.022
+ },
+ "r_edge": {
+  "engine": "edge",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "free A.I. voices can sound.",
+  "dur": 1.868
+ },
+ "n_title": {
+  "engine": "edge",
+  "voice": "en-US-AndrewMultilingualNeural",
+  "text": "One sentence. Eight different engines. And every one of them is free to use. Let's meet the cast.",
+  "dur": 6.436
+ },
+ "sapi": {
+  "engine": "sapi",
+  "voice": "Microsoft David Desktop",
+  "text": "Hello. I am Microsoft David. I come built into Windows, and I work completely offline.",
+  "dur": 7.182
+ },
+ "piper1": {
+  "engine": "piper",
+  "voice": "en_US-ryan-high",
+  "text": "I'm Piper. I'm small enough to run on a Raspberry Pi, and I come in hundreds of voices,",
+  "dur": 4.462
+ },
+ "piper2": {
+  "engine": "piper",
+  "voice": "en_GB-northern_english_male-medium",
+  "text": "including this one, from the north of England.",
+  "dur": 2.229
+ },
+ "kitten": {
+  "engine": "kitten",
+  "voice": "expr-voice-4-f",
+  "text": "I'm Kitten T T S. My whole model is under twenty-five megabytes.",
+  "dur": 5.567
+ },
+ "kokoro1": {
+  "engine": "kokoro",
+  "voice": "af_heart",
+  "text": "I'm Kokoro. Just eighty-two million parameters,",
+  "dur": 3.156
+ },
+ "kokoro2": {
+  "engine": "kokoro",
+  "voice": "bm_george",
+  "text": "more than fifty voices,",
+  "dur": 1.85
+ },
+ "kokoro3": {
+  "engine": "kokoro",
+  "voice": "ff_siwis",
+  "text": "et je parle aussi français.",
+  "dur": 1.57
+ },
+ "super1": {
+  "engine": "supertonic",
+  "voice": "M1",
+  "text": "I'm Supertonic. I speak thirty-one languages.",
+  "dur": 2.533
+ },
+ "super2": {
+  "engine": "supertonic",
+  "voice": "F1",
+  "text": "Hablo español,",
+  "dur": 0.947
+ },
+ "super3": {
+  "engine": "supertonic",
+  "voice": "M3",
+  "text": "spreche Deutsch,",
+  "dur": 1.018
+ },
+ "super4": {
+  "engine": "supertonic",
+  "voice": "F3",
+  "text": "한국어도 할 수 있어요.",
+  "dur": 1.437
+ },
+ "pocket1": {
+  "engine": "pocket",
+  "voice": "javert",
+  "text": "I'm Pocket T T S, from Kyutai. I talk faster than real time, on a laptop C P U.",
+  "dur": 7.302
+ },
+ "pocket2": {
+  "engine": "pocket",
+  "voice": "alba",
+  "text": "No graphics card required.",
+  "dur": 1.521
+ },
+ "cb1": {
+  "engine": "chatterbox",
+  "voice": "default",
+  "text": "Hi, I'm Chatterbox. I can keep things calm, and measured.",
+  "dur": 3.522
+ },
+ "cb2": {
+  "engine": "chatterbox",
+  "voice": "default",
+  "text": "Or I can get really, really excited about it!",
+  "dur": 3.195
+ },
+ "cb3": {
+  "engine": "chatterbox",
+  "voice": "clone:n_title",
+  "text": "I can even clone a voice from a few seconds of audio. Sound familiar?",
+  "dur": 4.51
+ },
+ "edge1": {
+  "engine": "edge",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "And I'm a Microsoft neural voice, through edge T T S. Hundreds of voices, in over seventy languages.",
+  "dur": 7.001
+ },
+ "edge2": {
+  "engine": "edge",
+  "voice": "en-AU-NatashaNeural",
+  "text": "G'day from Australia, too!",
+  "dur": 1.914
+ },
+ "n_wall": {
+  "engine": "edge",
+  "voice": "en-US-AndrewMultilingualNeural",
+  "text": "And that's only what runs on this laptop. Add a G.P.U., and there are dozens more. Vibe Voice, for whole podcasts. Deeya, for dialogue. Orpheus, with laughs and sighs. And Parler, which designs a voice from a description.",
+  "dur": 14.888
+ },
+ "f_sapi": {
+  "engine": "sapi",
+  "voice": "Microsoft David Desktop",
+  "text": "Free.",
+  "dur": 0.512
+ },
+ "f_piper": {
+  "engine": "piper",
+  "voice": "en_US-lessac-high",
+  "text": "Free.",
+  "dur": 0.534
+ },
+ "f_kitten": {
+  "engine": "kitten",
+  "voice": "expr-voice-5-m",
+  "text": "Free!",
+  "dur": 0.993
+ },
+ "f_kokoro": {
+  "engine": "kokoro",
+  "voice": "af_heart",
+  "text": "Free!",
+  "dur": 0.677
+ },
+ "f_super": {
+  "engine": "supertonic",
+  "voice": "F2",
+  "text": "Free!",
+  "dur": 0.547
+ },
+ "f_pocket": {
+  "engine": "pocket",
+  "voice": "javert",
+  "text": "Free.",
+  "dur": 0.805
+ },
+ "f_cb": {
+  "engine": "chatterbox",
+  "voice": "default",
+  "text": "Free!",
+  "dur": 0.606
+ },
+ "f_edge": {
+  "engine": "edge",
+  "voice": "en-US-AvaMultilingualNeural",
+  "text": "Free!",
+  "dur": 0.653
+ },
+ "n_outro": {
+  "engine": "edge",
+  "voice": "en-US-AndrewMultilingualNeural",
+  "text": "One script. Many voices. Made with GitHub Copilot, and Claude Opus five point five.",
+  "dur": 6.29
+ }
+}

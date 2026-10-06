@@ -732,7 +732,13 @@ Take your time with the generation. Think creatively and make this something rea
             <span class="link-list"><a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/launch-race/PROMPT.md">Prompt</a><a href="https://github.com/RyanBowie/ai-video-creation-guide/tree/main/examples/launch-race">Source</a><a href="media/launch-race.mp4">Download MP4</a></span>
           </figcaption>
         </figure>
-      </div>
+                    <figure class="shot">
+                      <video controls preload="none" playsinline width="1280" height="720" poster="media/voice-showcase-poster.jpg" aria-label="Eight free AI voices, one sentence: a relay and roll call of free text-to-speech engines (2 minutes 8 seconds)"><source src="media/voice-showcase.mp4" type="video/mp4"></video>
+                      <figcaption><strong>Eight free AI voices, one sentence</strong> – One sentence is passed word by word between eight free text-to-speech engines that run on an ordinary laptop CPU: Windows SAPI, <a href="https://github.com/OHF-Voice/piper1-gpl">Piper</a>, <a href="https://github.com/KittenML/KittenTTS">Kitten TTS</a>, <a href="https://github.com/hexgrad/kokoro">Kokoro-82M</a>, <a href="https://github.com/supertone-oss-archive/supertonic">Supertonic</a>, <a href="https://github.com/kyutai-labs/pocket-tts">Pocket TTS</a>, <a href="https://github.com/resemble-ai/chatterbox">Chatterbox</a> and <a href="https://github.com/rany2/edge-tts">Edge neural voices</a>. A roll call follows, with each engine's size, licence and voices, then a wall of 21 bigger open models that need a GPU. <small>2:08 · SVG motion graphics · 8 free TTS engines</small>
+                        <span class="link-list"><a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/voice-showcase/PROMPT.md">Prompt</a><a href="https://github.com/RyanBowie/ai-video-creation-guide/tree/main/examples/voice-showcase">Source</a><a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/voice-showcase/THIRD_PARTY_NOTICES.md">Model links and licences</a><a href="media/voice-showcase.mp4">Download MP4</a></span>
+                      </figcaption>
+                    </figure>
+                  </div>
       <h3>Behind the scenes</h3>
       <div class="gallery">
         <figure class="shot">
@@ -759,7 +765,15 @@ Take your time with the generation. Think creatively and make this something rea
           <a class="shot-btn" href="media/launch-race-falcon.jpg"><img src="media/launch-race-falcon.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Launch race still: a taped paper print, Fig. 3, shows a Falcon 9 booster firing its landing burn and touching down at Landing Zone 1 on 21 December 2015."><span class="visually-hidden"> (enlarge)</span></a>
           <figcaption><strong>One rocket breaks the chart</strong> – The first booster landing, drawn as a taped print, sets up the climax where the 2025 bar tears the frame. <small>Rendered at 1920 × 1080, 30 fps</small></figcaption>
         </figure>
-      </div>
+                  <figure class="shot">
+                    <a class="shot-btn" href="media/voice-showcase-rollcall.jpg"><img src="media/voice-showcase-rollcall.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Voice showcase still: the Kokoro-82M roll-call card with its size, licence and voices, next to a live waveform of the clip being spoken."><span class="visually-hidden"> (enlarge)</span></a>
+                    <figcaption><strong>Eight free AI voices</strong> – The roll call: each engine gets a card and a live waveform while it speaks. <small>Every clip was checked with speech recognition</small></figcaption>
+                  </figure>
+                  <figure class="shot">
+                    <a class="shot-btn" href="media/voice-showcase-wall.jpg"><img src="media/voice-showcase-wall.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Voice showcase still: a wall of 21 open text-to-speech models that need a GPU, such as F5-TTS, XTTS v2 and Orpheus."><span class="visually-hidden"> (enlarge)</span></a>
+                    <figcaption><strong>Eight free AI voices</strong> – The GPU wall: bigger open models for voice cloning and emotion. <small>All linked in THIRD_PARTY_NOTICES.md</small></figcaption>
+                  </figure>
+                </div>
     </section>
 
     <section class="section" id="pdoom" aria-labelledby="pdoom-h">
@@ -836,7 +850,7 @@ python -m http.server 8000</code><button type="button" class="btn btn-sm copy-bt
           <div class="code-box"><code id="run-render">python export_mp4.py
 python stills.py 5 20 40
 python make_voice.py</code><button type="button" class="btn btn-sm copy-btn" data-copy-target="run-render" data-jsonly hidden>Copy</button></div>
-          <p>Renders 1920 × 1080 at 30 fps, grabs stills at the given seconds and regenerates the voiceover. The same works in <code>examples\sofia-explorer</code>. In <code>examples\paper-copilot</code>, open <code>paper-copilot.html</code> and run <code>python export.py</code>. In <code>examples\launch-race</code>, run <code>python build_data.py</code> to refresh the data, then <code>python export.py</code>.</p>
+          <p>Renders 1920 × 1080 at 30 fps, grabs stills at the given seconds and regenerates the voiceover. The same works in <code>examples\sofia-explorer</code>. In <code>examples\paper-copilot</code>, open <code>paper-copilot.html</code> and run <code>python export.py</code>. In <code>examples\launch-race</code>, run <code>python build_data.py</code> to refresh the data, then <code>python export.py</code>. In <code>examples\voice-showcase</code>, run <code>python export_mp4.py</code> (the voices are already bundled in <code>voice.js</code>). To regenerate them, install the engines listed in <code>make_voices.py</code> and run <code>python make_voices.py</code>, then <code>python assemble.py</code>.</p>
         </div>
       </div>
     </section>
@@ -853,6 +867,7 @@ python make_voice.py</code><button type="button" class="btn btn-sm copy-btn" dat
         <li><strong>Jonathan C. McDowell</strong>: <a href="https://planet4589.org/space/gcat/">GCAT</a> (CC BY 4.0), the launch data behind One rocket breaks the chart. Its look follows the lemo-opuscar <a href="https://github.com/lemomo-ai/lemo-opuscar/blob/main/styles/dataviz/STYLE.md">Data Storytelling style</a>; the engine was written from scratch.</li>
         <li><strong>Natural Earth</strong> (public domain): the world map coastlines in Sofia Explorer.</li>
         <li><strong>Voiceovers</strong>: Microsoft Edge neural TTS through <a href="https://github.com/rany2/edge-tts">edge-tts</a>.</li>
+        <li><strong>Free TTS engines</strong> in Eight free AI voices: Windows SAPI, <a href="https://github.com/OHF-Voice/piper1-gpl">Piper</a>, <a href="https://github.com/KittenML/KittenTTS">Kitten TTS</a>, <a href="https://github.com/hexgrad/kokoro">Kokoro-82M</a> (through <a href="https://github.com/thewh1teagle/kokoro-onnx">kokoro-onnx</a>), <a href="https://github.com/supertone-oss-archive/supertonic">Supertonic</a>, <a href="https://github.com/kyutai-labs/pocket-tts">Pocket TTS</a>, <a href="https://github.com/resemble-ai/chatterbox">Chatterbox</a> and <a href="https://github.com/rany2/edge-tts">edge-tts</a>. Each clip stays under its model's and voice's licence, and some are non-commercial (for example the Piper <code>ryan</code> voice, CC BY-NC-SA). The <a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/voice-showcase/THIRD_PARTY_NOTICES.md">notices</a> list every licence and link the 21 GPU models shown in the video.</li>
       </ul>
       <p>The code, prompts and skills are under the <a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/LICENSE">MIT licence</a>. Sofia and her colleagues are fictional.</p>
     </section>

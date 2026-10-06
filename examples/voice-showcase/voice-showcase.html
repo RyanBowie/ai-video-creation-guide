@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Voice Showcase — one sentence, eight free AI voices</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  #wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #stage { flex: none; width: 1920px; height: 1080px; transform-origin: center; }
+  #hud { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; gap: 10px; align-items: center;
+         font: 13px "Segoe UI", sans-serif; color: #ccc; background: rgba(20,20,30,.85); padding: 8px 14px; border-radius: 10px; z-index: 10; }
+  #hud button { background: #2a2a3a; color: #fff; border: 0; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  #hud input { width: 360px; }
+  body.clean #hud { display: none; }
+  #start { position: fixed; inset: 0; z-index: 20; display: none; align-items: center; justify-content: center; font: 600 28px "Segoe UI", sans-serif; color: #F3EFE6; background: rgba(11,14,26,.55); cursor: pointer; letter-spacing: .02em; }
+</style>
+</head>
+<body>
+<div id="start">&#9654;&nbsp; Click or press Space to play with sound</div>
+<div id="wrap"><svg id="stage" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080"></svg></div>
+<div id="hud">
+  <button id="play">Pause</button>
+  <button id="restart">Restart</button>
+  <input id="scrub" type="range" min="0" value="0" />
+  <span id="time">0.0s</span>
+  <button id="mute">Sound on</button>
+  <span style="opacity:.6">Space play/pause · R restart · M mute · H hide controls · F11 fullscreen</span>
+</div>
+<script src="voice.js"></script>
+<script>
+// ============================================================ constants
+const W = 1920, H = 1080, FPS = 30;
+const COL = {
+  night: '#0B0E1A', panel: '#151A2E', line: '#2A3150', light: '#F3EFE6', muted: '#8C93AD',
+  parch: '#F1E6CF', parch2: '#E6D6B4', ink: '#2B2118', red: '#A23B2A', gold: '#FFC857',
+  teal: '#2EC4B6', pink: '#F25C9C', wood: '#8B5A2B', steel: '#8A8F9C',
+};
+const SANS = "'Segoe UI Variable Display','Segoe UI',system-ui,sans-serif";
+const SERIF = "'Palatino Linotype','Book Antiqua',Palatino,Georgia,serif";
+const MONO = "'Cascadia Code',Consolas,monospace";
+
+// ============================================================ maths / easing
+const clamp01 = t => Math.max(0, Math.min(1, t));
+const clamp = (t, a, b) => Math.max(a, Math.min(b, t));
+const mix = (a, b, t) => a + (b - a) * t;
+const mixP = (p, q, t) => [mix(p[0], q[0], t), mix(p[1], q[1], t)];
+const eio = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const eout = t => 1 - Math.pow(1 - t, 3);
+const ein = t => t * t * t;
+const eback = t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+const prog = (f, a, b, e) => { const t = clamp01((f - a) / (b - a)); return e ? e(t) : t; };
+function spring(fr, { damping = 12, stiffness = 170, mass = 1 } = {}) {
+  if (fr <= 0) return 0;
+  let x = 0, v = 0; const steps = Math.ceil(fr * 4), dt = fr / FPS / steps;
+  for (let i = 0; i < steps; i++) { const a = (-stiffness * (x - 1) - damping * v) / mass; v += a * dt; x += v * dt; }
+  return x;
+}
+const rnd = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const n1 = v => (+v).toFixed(1);
+const n3 = v => (+v).toFixed(3);
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const quad = (a, c, b, t) => { const u = 1 - t; return [u*u*a[0] + 2*u*t*c[0] + t*t*b[0], u*u*a[1] + 2*u*t*c[1] + t*t*b[1]]; };
+const quadD = (a, c, b, t) => [2*(1-t)*(c[0]-a[0]) + 2*t*(b[0]-c[0]), 2*(1-t)*(c[1]-a[1]) + 2*t*(b[1]-c[1])];
+function limb(a, ang, len) { const r = ang * Math.PI / 180; return [a[0] + Math.sin(r) * len, a[1] + Math.cos(r) * len]; }
+function ik(a, b, l1, l2, bend = -1) {
+  const dx = b[0] - a[0], dy = b[1] - a[1];
+  const d = Math.max(1e-3, Math.min(Math.hypot(dx, dy), l1 + l2 - 0.01));
+  const c = (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d);
+  const t = Math.atan2(dy, dx) - bend * Math.acos(Math.max(-1, Math.min(1, c)));
+  return [a[0] + Math.cos(t) * l1, a[1] + Math.sin(t) * l1];
+}
+function segX(a, b, c, d) {
+  const r = [b[0]-a[0], b[1]-a[1]], s = [d[0]-c[0], d[1]-c[1]];
+  const den = r[0]*s[1] - r[1]*s[0]; if (Math.abs(den) < 1e-6) return null;
+  const t = ((c[0]-a[0])*s[1] - (c[1]-a[1])*s[0]) / den, u = ((c[0]-a[0])*r[1] - (c[1]-a[1])*r[0]) / den;
+  return (t >= 0 && t <= 1 && u >= 0 && u <= 1) ? [a[0] + t*r[0], a[1] + t*r[1]] : null;
+}
+
+// ============================================================ text + path helpers
+const mctx = document.createElement('canvas').getContext('2d');
+function measure(str, size, weight, font, italic) { mctx.font = `${italic ? 'italic ' : ''}${weight} ${size}px ${font}`; return mctx.measureText(str).width; }
+
+// Word-by-word staggered reveal. segs: [{t, fill?, italic?}]
+function words(segs, cx, y, f, delay, o = {}) {
+  const { size = 64, weight = 600, font = SANS, stagger = 3, dur = 18, dist = 30, op = 1 } = o;
+  const items = [];
+  segs.forEach(sg => sg.t.split(' ').forEach(w => { if (w) items.push({ w, fill: sg.fill || o.fill || COL.light, italic: sg.italic ?? o.italic ?? false }); }));
+  const sp = measure(' ', size, weight, font, false);
+  const widths = items.map(it => measure(it.w, size, weight, font, it.italic));
+  let x = cx - (widths.reduce((a, b) => a + b, 0) + sp * (items.length - 1)) / 2;
+  let out = '';
+  items.forEach((it, i) => {
+    const t = prog(f, delay + i * stagger, delay + i * stagger + dur, eout);
+    if (t > 0) out += `<text x="${n1(x)}" y="${n1(y + (1 - t) * dist)}" opacity="${n3(t * op)}" font-family="${font}" font-size="${size}" font-weight="${weight}" fill="${it.fill}"${it.italic ? ' font-style="italic"' : ''}>${esc(it.w)}</text>`;
+    x += widths[i] + sp;
+  });
+  return out;
+}
+function stroke(d, t, attrs = '') {
+  if (t <= 0) return '';
+  return `<path d="${d}" fill="none" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="${n3(1 - t)}" ${attrs}/>`;
+}
+const svgNS = 'http://www.w3.org/2000/svg';
+const hidden = document.createElementNS(svgNS, 'svg');
+hidden.style.cssText = 'position:absolute;width:0;height:0;visibility:hidden';
+document.body.appendChild(hidden);
+const pathCache = new Map();
+function pointAt(d, t) {
+  let p = pathCache.get(d);
+  if (!p) { p = document.createElementNS(svgNS, 'path'); p.setAttribute('d', d); hidden.appendChild(p); p._len = p.getTotalLength(); pathCache.set(d, p); }
+  const q = p.getPointAtLength(p._len * clamp01(t)); return [q.x, q.y];
+}
+function partial(d, t, n = 60) {
+  const pts = []; for (let i = 0; i <= n; i++) { const q = pointAt(d, t * i / n); pts.push(n1(q[0]) + ',' + n1(q[1])); } return pts.join(' ');
+}
+
+// ============================================================ backgrounds
+const DEFS = `<defs><pattern id="dots" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.6" fill="#fff" opacity=".06"/></pattern></defs>`;
+const bgNight = () => `<rect width="${W}" height="${H}" fill="${COL.night}"/><rect width="${W}" height="${H}" fill="url(#dots)"/>`;
+const nightRect = (x, w) => w > 0 ? `<rect x="${n1(x)}" y="0" width="${n1(w)}" height="${H}" fill="${COL.night}"/><rect x="${n1(x)}" y="0" width="${n1(w)}" height="${H}" fill="url(#dots)"/>` : '';
+const SPECKS = Array.from({ length: 70 }, (_, i) => `<circle cx="${n1(rnd(i) * W)}" cy="${n1(rnd(i + 99) * H)}" r="${n1(1 + rnd(i + 7) * 2.5)}" fill="${COL.ink}" opacity="${n3(0.04 + rnd(i + 3) * 0.06)}"/>`).join('');
+const bgParch = () => `<rect width="${W}" height="${H}" fill="${COL.parch}"/>${SPECKS}`;
+function stars(F, drift = 0) {
+  let s = '';
+  for (let i = 0; i < 120; i++) {
+    const x = (((rnd(i) * W - drift * (0.3 + rnd(i + 5) * 0.7)) % W) + W) % W;
+    const tw = .35 + .65 * Math.abs(Math.sin(F * 0.05 + i));
+    s += `<circle cx="${n1(x)}" cy="${n1(rnd(i + 50) * H)}" r="${n1(0.8 + rnd(i + 9) * 1.8)}" fill="#fff" opacity="${n3(tw * .8)}"/>`;
+  }
+  return s;
+}
+
+// ============================================================ Microsoft 365 Copilot-style mark (two interlocking ribbons, 180° symmetric)
+const CP_A = 'M70 325 L160 325 Q173 325 181 300 L216 185 Q224 155 250 155 L385 155 C350 155 348 110 340 82 C330 50 315 40 290 40 L150 40 Q115 40 105 75 L40 290 Q28 325 70 325 Z';
+const CP_FOLD = 'M262 40 L290 40 C315 40 330 50 340 82 C348 110 350 155 385 155 L250 155 Q224 155 220 170 Q232 90 262 40 Z';
+const CP_DEFS = `
+<linearGradient id="cpA" gradientUnits="userSpaceOnUse" x1="150" y1="40" x2="110" y2="325"><stop offset="0" stop-color="#38C2F8"/><stop offset=".3" stop-color="#1C8FE3"/><stop offset=".62" stop-color="#4DB57A"/><stop offset="1" stop-color="#F7C51E"/></linearGradient>
+<linearGradient id="cpAf" gradientUnits="userSpaceOnUse" x1="250" y1="60" x2="380" y2="150"><stop offset="0" stop-color="#0B2BA8"/><stop offset=".6" stop-color="#1552D6"/><stop offset="1" stop-color="#1E7BEA"/></linearGradient>
+<linearGradient id="cpB" gradientUnits="userSpaceOnUse" x1="150" y1="40" x2="110" y2="325"><stop offset="0" stop-color="#FFB16A"/><stop offset=".38" stop-color="#F7738A"/><stop offset=".7" stop-color="#E4569A"/><stop offset="1" stop-color="#B04FE6"/></linearGradient>
+<linearGradient id="cpBf" gradientUnits="userSpaceOnUse" x1="250" y1="60" x2="380" y2="150"><stop offset="0" stop-color="#C92E1C"/><stop offset=".55" stop-color="#F0582E"/><stop offset="1" stop-color="#FF9A5A"/></linearGradient>
+<linearGradient id="cpGloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<linearGradient id="cpSheen" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<clipPath id="cpClip"><path d="${CP_A}"/><path d="${CP_FOLD}"/><path d="${CP_A}" transform="rotate(180 240 240)"/><path d="${CP_FOLD}" transform="rotate(180 240 240)"/></clipPath>
+<filter id="cpGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="28"/></filter>`;
+let GF = 0; // global frame, set by render() — drives the idle sheen
+function mark(cx, cy, size, t = 1, spin = 0) {
+  if (size <= 0.5) return '';
+  const k = size / 360, e = eout(clamp01(t)), sep = mix(90, 0, e);
+  const draw = prog(t, 0, .6, eio), fill = prog(t, .3, .9), fold = prog(t, .55, 1, eout);
+  const half = (id, rot) => {
+    const off = rot ? `translate(${n1(sep)} ${n1(sep * .55)})` : `translate(${n1(-sep)} ${n1(-sep * .55)})`;
+    const R = rot ? ' rotate(180 240 240)' : '';
+    return `<g transform="${off}${R}"><path d="${CP_A}" fill="url(#${id})" fill-opacity="${n3(fill)}" stroke="url(#${id})" stroke-width="10" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="${n3(1 - draw)}"/><path d="${CP_A}" fill="url(#cpGloss)" opacity="${n3(fill * .7)}"/><path d="${CP_FOLD}" fill="url(#${id}f)" opacity="${n3(fold)}"/></g>`;
+  };
+  const sweep = ((GF % 150) / 150) * 900 - 250;
+  const sheen = t >= 1 ? `<g clip-path="url(#cpClip)"><rect x="${n1(sweep)}" y="-40" width="160" height="560" fill="url(#cpSheen)" transform="rotate(20 240 240)" opacity=".6"/></g>` : '';
+  const glow = `<g filter="url(#cpGlow)" opacity="${n3(.35 * fill)}"><path d="${CP_A}" fill="url(#cpA)"/><path d="${CP_A}" fill="url(#cpB)" transform="rotate(180 240 240)"/></g>`;
+  return `<g transform="translate(${n1(cx)} ${n1(cy)}) rotate(${n1(spin)}) scale(${n3(k)}) translate(-240 -240)">${size > 120 ? glow : ''}${half('cpA', false)}${half('cpB', true)}${sheen}</g>`;
+}function companion(x, y, size, F) {
+  let c = `<circle cx="${n1(x)}" cy="${n1(y)}" r="${n1(Math.min(size * 1.9, 200))}" fill="${COL.light}" opacity=".05"/><circle cx="${n1(x)}" cy="${n1(y)}" r="${n1(Math.min(size * 1.15, 160))}" fill="${COL.light}" opacity=".06"/>`;
+  for (let k = 1; k < 7; k++) c += `<circle cx="${n1(x - k * 18 * size / 70)}" cy="${n1(y + Math.sin(F * .2 - k * .8) * 8)}" r="${n1((5 - k * .6) * size / 70)}" fill="${['#1C8FE3', '#E4569A', '#F7C51E'][k % 3]}" opacity="${n3(.6 - k * .08)}"/>`;
+  return c + mark(x, y, size, 1, Math.sin(F * .05) * 10);
+}
+
+
+// ============================================================ voice showcase: helpers
+function txt(x, y, s, o = {}) {
+  const { size = 32, weight = 600, font = SANS, fill = COL.light, anchor = 'start', op = 1, ls = 0, italic = false, extra = '' } = o;
+  if (op <= 0.001) return '';
+  return `<text x="${n1(x)}" y="${n1(y)}" font-family="${font}" font-size="${size}" font-weight="${weight}" fill="${fill}" text-anchor="${anchor}" opacity="${n3(op)}"${ls ? ` letter-spacing="${ls}"` : ''}${italic ? ' font-style="italic"' : ''}${extra}>${esc(String(s))}</text>`;
+}
+const pillW = (s, size = 24, weight = 600, font = SANS, padX = 18) => measure(s, size, weight, font) + padX * 2;
+function pill(x, y, s, o = {}) {
+  const { size = 24, weight = 600, font = SANS, fill = COL.light, bg = COL.panel, bgOp = 1, stroke = COL.line, op = 1, padX = 18, anchor = 'start', sc = 1 } = o;
+  if (op <= 0.001 || sc <= 0.001) return '';
+  const h = o.h || size * 1.75, w = pillW(s, size, weight, font, padX), cx = anchor === 'middle' ? x : x + w / 2;
+  return `<g opacity="${n3(op)}" transform="translate(${n1(cx)} ${n1(y)}) scale(${n3(sc)})"><rect x="${n1(-w / 2)}" y="${n1(-h / 2)}" width="${n1(w)}" height="${n1(h)}" rx="${n1(h / 2)}" fill="${bg}" fill-opacity="${n3(bgOp)}" stroke="${stroke}" stroke-width="2"/><text x="0" y="${n1(size * 0.35)}" text-anchor="middle" font-family="${font}" font-size="${size}" font-weight="${weight}" fill="${fill}">${esc(s)}</text></g>`;
+}
+function wrap(str, maxW, size, weight = 600, font = SANS) {
+  const out = [[]]; let w = 0; const sp = measure(' ', size, weight, font);
+  str.split(' ').forEach(t => { const tw = measure(t, size, weight, font); if (out[out.length - 1].length && w + sp + tw > maxW) { out.push([]); w = 0; } w += (out[out.length - 1].length ? sp : 0) + tw; out[out.length - 1].push(t); });
+  return out;
+}
+const fadeIO = (f, d, a = 10, b = 12) => Math.min(prog(f, 0, a), 1 - prog(f, d - b, d));
+
+// ============================================================ engines + clips
+const ENG = [
+  { id: 'sapi', name: 'Windows SAPI', maker: 'Microsoft · built into Windows', col: '#7FB2FF', tags: ['Built in', 'Offline', 'Since 1995'] },
+  { id: 'piper', name: 'Piper', maker: 'Open Home Foundation · Rhasspy', col: '#8BE38B', tags: ['ONNX', 'GPL-3.0', 'Hundreds of voices'] },
+  { id: 'kitten', name: 'Kitten TTS', maker: 'KittenML · nano model', col: '#FF9ED2', tags: ['< 25 MB', 'Apache-2.0', 'CPU'] },
+  { id: 'kokoro', name: 'Kokoro', maker: 'hexgrad · Kokoro-82M', col: COL.gold, tags: ['82M params', 'Apache-2.0', '54 voices'] },
+  { id: 'super', name: 'Supertonic', maker: 'Supertone · on-device ONNX', col: COL.teal, tags: ['MIT code · OpenRAIL-M weights', '31 languages'] },
+  { id: 'pocket', name: 'Pocket TTS', maker: 'Kyutai · 100M params', col: '#B59BFF', tags: ['CPU real-time', 'MIT code · CC-BY-4.0 weights'] },
+  { id: 'cb', name: 'Chatterbox', maker: 'Resemble AI · 500M params', col: '#FF7A59', tags: ['MIT', 'Emotion control', 'Voice cloning'] },
+  { id: 'edge', name: 'Edge TTS', maker: 'Microsoft neural voices · edge-tts', col: '#4CD7FF', tags: ['Cloud', 'No API key', '70+ languages'] },
+];
+const EI = Object.fromEntries(ENG.map((e, i) => [e.id, i]));
+const engOf = k => ENG[EI[k.replace(/^[rf]_/, '').replace(/\d+$/, '')]];
+const XDEFS = ENG.map(e => `<radialGradient id="g_${e.id}"><stop offset="0" stop-color="${e.col}" stop-opacity=".20"/><stop offset=".6" stop-color="${e.col}" stop-opacity=".05"/><stop offset="1" stop-color="${e.col}" stop-opacity="0"/></radialGradient>`).join('')
+  + `<radialGradient id="g_white"><stop offset="0" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
+const glow = (id, cx, cy, r, op = 1) => op > .001 ? `<circle cx="${n1(cx)}" cy="${n1(cy)}" r="${n1(r)}" fill="url(#g_${id})" opacity="${n3(op)}"/>` : '';
+const bg = (F, id, op = 1, cx = 480, cy = 420) => bgNight() + `<g opacity=".35">${stars(F, F * .4)}</g>` + (id ? glow(id, cx, cy, 900, op) : '');
+const VOICE_ID = {
+  r_sapi: 'Microsoft David Desktop', r_piper: 'en_US-ryan-high', r_kitten: 'expr-voice-3-m', r_kokoro: 'bm_george', r_super: 'F2', r_pocket: 'alba', r_cb: 'default voice', r_edge: 'en-US-AvaMultilingualNeural',
+  sapi: 'Microsoft David Desktop', piper1: 'en_US-ryan-high', piper2: 'en_GB-northern_english_male-medium', kitten: 'expr-voice-4-f',
+  kokoro1: 'af_heart', kokoro2: 'bm_george', kokoro3: 'ff_siwis', super1: 'M1 · English', super2: 'F1 · Spanish', super3: 'M3 · German', super4: 'F3 · Korean',
+  pocket1: 'javert', pocket2: 'alba', cb1: 'exaggeration 0.25', cb2: 'exaggeration 1.3', cb3: 'zero-shot clone', edge1: 'en-US-AvaMultilingualNeural', edge2: 'en-AU-NatashaNeural',
+};
+const SUBS = {
+  sapi: 'Hello. I am Microsoft David. I come built into Windows, and I work completely offline.',
+  piper1: "I'm Piper. I'm small enough to run on a Raspberry Pi, and I come in hundreds of voices,",
+  piper2: 'including this one, from the north of England.',
+  kitten: "I'm Kitten TTS. My whole model is under 25 megabytes.",
+  kokoro1: "I'm Kokoro. Just 82 million parameters,", kokoro2: 'more than 50 voices,', kokoro3: 'et je parle aussi français.',
+  super1: "I'm Supertonic. I speak 31 languages.", super2: 'Hablo español,', super3: 'spreche Deutsch,', super4: '한국어도 할 수 있어요.',
+  pocket1: "I'm Pocket TTS, from Kyutai. I talk faster than real time, on a laptop CPU.", pocket2: 'No graphics card required.',
+  cb1: "Hi, I'm Chatterbox. I can keep things calm, and measured.", cb2: 'Or I can get really, really excited about it!',
+  cb3: 'I can even clone a voice from a few seconds of audio. Sound familiar?',
+  edge1: "And I'm a Microsoft neural voice, through edge-tts. Hundreds of voices, in over 70 languages.", edge2: "G'day from Australia, too!",
+};
+const TRANS = { kokoro3: '“…and I speak French too.”', super2: '“I speak Spanish,”', super3: '“…speak German,”', super4: '“I can speak Korean too.”' };
+const KR = "'Malgun Gothic','Segoe UI',sans-serif";
+
+// ============================================================ timeline builder (frames, relative to scene)
+const LEN = k => (window.VENV && VENV[k]) ? VENV[k].length : Math.round(((window.VDUR || {})[k] || 1) * FPS);
+function mk(name, fn) { const s = { name, cues: [], sfx: [], t: 0, at: {} }; s.render = (f, d) => fn(f, d, s); return s; }
+function say(s, k, gap = 0) { s.cues.push([k, s.t]); s.at[k] = s.t; s.t += LEN(k) + gap; return s; }
+const wait = (s, n) => (s.t += n, s);
+const fx = (s, name, rel) => (s.sfx.push([rel ?? s.t, name]), s);
+const envAt = (k, lf) => { const v = window.VENV && VENV[k]; return v && lf >= 0 && lf < v.length ? v[Math.floor(lf)] : 0; };
+// the latest clip (of keys) that has started by scene frame f
+function cur(s, f, keys) {
+  let k = null; for (const q of keys) if (s.at[q] != null && f >= s.at[q]) k = q;
+  if (!k) return { k: keys[0], lf: f - s.at[keys[0]], p: 0, on: false, started: false };
+  const lf = f - s.at[k], L = LEN(k); return { k, lf, p: clamp01(lf / L), on: lf < L, started: true };
+}
+// word highlight proportional to character count (clips carry a little lead/tail silence)
+function litCount(ws, p) {
+  const tot = ws.reduce((a, w) => a + w.length + 1, 0), q = clamp01((p - .04) / .88); let acc = 0, n = 0;
+  if (q <= 0) return 0; for (const w of ws) { if (q * tot >= acc) n++; acc += w.length + 1; } return n;
+}
+function subtitle(str, cx, y, maxW, p, col, o = {}) {
+  const { size = 34, weight = 600, font = SANS, lh = 1.3, op = 1 } = o;
+  const lines = wrap(str, maxW, size, weight, font), all = lines.flat(), lit = litCount(all, p), done = p >= 1;
+  const sp = measure(' ', size, weight, font); let idx = 0, out = '';
+  const y0 = y - (lines.length - 1) * size * lh / 2;
+  lines.forEach((ln, li) => {
+    const ws = ln.map(w => measure(w, size, weight, font)); let x = cx - (ws.reduce((a, b) => a + b, 0) + sp * (ln.length - 1)) / 2;
+    ln.forEach((w, wi) => {
+      const i = idx++, fill = done || i < lit - 1 ? COL.light : i === lit - 1 ? col : COL.muted, a = done || i < lit ? 1 : .4;
+      out += txt(x, y0 + li * size * lh, w, { size, weight, font, fill, op: a * op }); x += ws[wi] + sp;
+    });
+  });
+  return out;
+}
+// waveform of a whole clip: played part coloured + playhead
+function waveBars(k, x, y, w, h, lf, col, n = 110, op = 1) {
+  const v = (window.VENV && VENV[k]) || [], L = v.length || 1, bw = w / n; let out = '';
+  for (let i = 0; i < n; i++) {
+    let m = 0; for (let j = Math.floor(i * L / n); j < Math.max(Math.floor(i * L / n) + 1, Math.floor((i + 1) * L / n)); j++) m = Math.max(m, v[j] || 0);
+    const bh = Math.max(4, m * h), played = (i + .5) / n * L <= lf;
+    out += `<rect x="${n1(x + i * bw + bw * .2)}" y="${n1(y - bh / 2)}" width="${n1(bw * .6)}" height="${n1(bh)}" rx="${n1(bw * .3)}" fill="${played ? col : COL.line}"/>`;
+  }
+  const px = x + clamp01(lf / L) * w;
+  if (lf > 0 && lf < L) out += `<line x1="${n1(px)}" y1="${n1(y - h / 2 - 10)}" x2="${n1(px)}" y2="${n1(y + h / 2 + 10)}" stroke="${COL.light}" stroke-width="2" opacity=".7"/>`;
+  return op > .001 ? `<g opacity="${n3(op)}">${out}</g>` : '';
+}
+// voice orb: radial bars driven by the clip envelope
+function orb(cx, cy, r, amp, col, F, op = 1) {
+  if (op <= .001) return '';
+  let out = `<circle cx="${cx}" cy="${cy}" r="${n1(r * 2.2)}" fill="${col}" opacity="${n3(.04 + amp * .1)}"/><circle cx="${cx}" cy="${cy}" r="${n1(r * (1 + amp * .06))}" fill="${COL.night}" stroke="${col}" stroke-width="4"/>`;
+  for (let i = 0; i < 64; i++) {
+    const a = i / 64 * Math.PI * 2, wob = .55 + .45 * Math.abs(Math.sin(F * .45 + i * 1.7 + rnd(i) * 6)), L = 8 + amp * 90 * wob * (.6 + .4 * rnd(i + 3));
+    out += `<line x1="${n1(cx + Math.cos(a) * (r + 14))}" y1="${n1(cy + Math.sin(a) * (r + 14))}" x2="${n1(cx + Math.cos(a) * (r + 14 + L))}" y2="${n1(cy + Math.sin(a) * (r + 14 + L))}" stroke="${col}" stroke-width="5" stroke-linecap="round" opacity="${n3(.3 + amp * .7)}"/>`;
+  }
+  for (let i = -3; i <= 3; i++) { const hh = Math.max(6, (14 + amp * 46) * (1 - Math.abs(i) * .2) * (.65 + .35 * Math.abs(Math.sin(F * .6 + i * 1.3)))); out += `<rect x="${n1(cx + i * 17 - 5)}" y="${n1(cy - hh)}" width="10" height="${n1(hh * 2)}" rx="5" fill="${col}"/>`; }
+  return `<g opacity="${n3(op)}">${out}</g>`;
+}
+// engine chip (coloured dot + name)
+const chipW = (e, size = 24) => pillW(e.name, size, 600, SANS, 20) + size * .9;
+function chip(cx, cy, e, o = {}) {
+  const { size = 24, op = 1, sc = 1, active = true } = o;
+  if (op <= .001 || sc <= .001) return '';
+  const w = chipW(e, size), h = size * 1.9;
+  return `<g opacity="${n3(op)}" transform="translate(${n1(cx)} ${n1(cy)}) scale(${n3(sc)})"><rect x="${n1(-w / 2)}" y="${n1(-h / 2)}" width="${n1(w)}" height="${n1(h)}" rx="${n1(h / 2)}" fill="${active ? e.col : COL.panel}" fill-opacity="${active ? .16 : 1}" stroke="${active ? e.col : COL.line}" stroke-width="2"/><circle cx="${n1(-w / 2 + size * .95)}" cy="0" r="${n1(size * .3)}" fill="${active ? e.col : COL.muted}"/><text x="${n1(size * .45)}" y="${n1(size * .35)}" text-anchor="middle" font-family="${SANS}" font-size="${size}" font-weight="600" fill="${active ? COL.light : COL.muted}">${esc(e.name)}</text></g>`;
+}
+function chipRow(cx, cy, list, gap, o = {}, per = () => ({})) {
+  const ws = list.map(e => chipW(e, o.size || 24)), tot = ws.reduce((a, b) => a + b, 0) + gap * (list.length - 1); let x = cx - tot / 2, out = '';
+  list.forEach((e, i) => { out += chip(x + ws[i] / 2, cy, e, { ...o, ...per(i, e) }); x += ws[i] + gap; }); return out;
+}
+
+
+// ============================================================ scene 1: the relay sentence
+const RELAY = ['r_sapi', 'r_piper', 'r_kitten', 'r_kokoro', 'r_super', 'r_pocket', 'r_cb', 'r_edge'];
+const RTXT = { r_sapi: 'This one sentence', r_piper: 'gets passed along', r_kitten: 'from one model to the next,', r_kokoro: 'and the next,', r_super: 'and the next,', r_pocket: 'and the next,', r_cb: 'to show you how different', r_edge: 'free A.I. voices can sound.' };
+const RLINES = [['r_sapi', 'r_piper'], ['r_kitten'], ['r_kokoro', 'r_super', 'r_pocket'], ['r_cb'], ['r_edge']];
+const R_SIZE = 66, R_Y0 = 318, R_STEP = 110;
+const R_LAYOUT = (() => {
+  const sp = measure(' ', R_SIZE, 600, SANS), out = [];
+  RLINES.forEach((ln, li) => {
+    const items = []; ln.forEach(k => RTXT[k].split(' ').forEach((w, wi, arr) => items.push({ k, w, wi, n: arr.length, ww: measure(w, R_SIZE, 600, SANS) })));
+    let x = W / 2 - (items.reduce((a, b) => a + b.ww, 0) + sp * (items.length - 1)) / 2;
+    items.forEach(it => { it.x = x; it.y = R_Y0 + li * R_STEP; x += it.ww + sp; out.push(it); });
+  });
+  return out;
+})();
+function relayEnv(s, f) { for (const k of RELAY) { const lf = f - s.at[k]; if (lf >= 0 && lf < LEN(k)) return [envAt(k, lf), engOf(k)]; } return [0, null]; }
+function sRelay(f, d, s) {
+  let o = bg(f, null);
+  const c = cur(s, f, RELAY), e = engOf(c.k), fin = 1 - prog(f, d - 12, d);
+  o += glow(e.id, W / 2, 520, 1000, c.started ? .9 : 0);
+  o += txt(W / 2, 140, 'ONE SENTENCE  ·  EIGHT VOICE ENGINES', { size: 24, font: MONO, fill: COL.muted, anchor: 'middle', ls: 4, op: prog(f, 0, 14) * fin });
+  if (c.started) o += pill(W / 2, 205, `${e.name}  ·  ${VOICE_ID[c.k]}`, { size: 26, anchor: 'middle', fill: COL.light, bg: e.col, bgOp: .16, stroke: e.col, op: fin * (c.on ? 1 : .55), sc: .9 + .1 * eback(prog(c.lf, 0, 8)) });
+  // the sentence, chunk by chunk, karaoke-style in each engine's colour
+  const chunks = {};
+  R_LAYOUT.forEach(it => {
+    const k = it.k, st = s.at[k], L = LEN(k), lf = f - st, ce = engOf(k); if (lf < 0) return;
+    const words = RTXT[k].split(' '), tot = words.reduce((a, w) => a + w.length + 1, 0), acc = words.slice(0, it.wi).reduce((a, w) => a + w.length + 1, 0);
+    const pthr = .04 + .88 * acc / tot, t = eout(clamp01((lf / L - pthr) * L / 7));
+    if (t <= 0) return;
+    const speaking = lf < L, fill = speaking ? ce.col : COL.light;
+    o += txt(it.x, it.y + (1 - t) * 18, it.w, { size: R_SIZE, weight: 600, fill, op: t * fin });
+    const ch = chunks[k] || (chunks[k] = { x0: it.x, x1: 0, y: it.y, lf, L, ce }); ch.x1 = it.x + it.ww;
+  });
+  Object.entries(chunks).forEach(([k, ch]) => {
+    const p = eout(prog(ch.lf, 0, ch.L)), cx = (ch.x0 + ch.x1) / 2;
+    o += `<line x1="${n1(ch.x0)}" y1="${n1(ch.y + 18)}" x2="${n1(mix(ch.x0, ch.x1, p))}" y2="${n1(ch.y + 18)}" stroke="${ch.ce.col}" stroke-width="4" stroke-linecap="round" opacity="${n3(.85 * fin)}"/>`;
+    o += txt(cx, ch.y + 48, ch.ce.name.toUpperCase(), { size: 17, font: MONO, fill: ch.ce.col, anchor: 'middle', ls: 2, op: prog(ch.lf, 2, 12) * fin });
+  });
+  // scrolling waveform history, coloured by whoever was speaking
+  const N = 150, x0 = 260, bw = (W - 2 * x0) / N;
+  for (let i = 0; i < N; i++) {
+    const ff = f - (N - 1 - i), [a, ee] = relayEnv(s, ff), h = Math.max(4, a * 120);
+    o += `<rect x="${n1(x0 + i * bw + bw * .2)}" y="${n1(905 - h / 2)}" width="${n1(bw * .6)}" height="${n1(h)}" rx="${n1(bw * .3)}" fill="${ee ? ee.col : COL.line}" opacity="${n3(fin * (.25 + .75 * i / N) * prog(f, 0, 14))}"/>`;
+  }
+  o += chipRow(W / 2, 1010, ENG, 12, { size: 18 }, (i, en) => ({ active: f >= s.at[RELAY[i]], op: fin * prog(f, 4 + i * 2, 16 + i * 2), sc: .85 + .15 * eback(prog(f - s.at[RELAY[i]], 0, 10)) }));
+  return o + `<rect width="${W}" height="${H}" fill="#000" opacity="${n3(1 - prog(f, 0, 12))}"/>`;
+}
+
+// ============================================================ scene 2: title — one sentence, eight engines
+function sTitle(f, d, s) {
+  const b = s.at.n_title, T = sec => b + Math.round(sec * FPS), fo = 1 - prog(f, d - 12, d);
+  let o = bg(f, null) + `<g opacity="${n3(fo)}">`;
+  o += glow('white', W / 2, 480, 900, 1);
+  o += words([{ t: 'One sentence.' }], W / 2, 300, f, T(0), { size: 96, weight: 700, stagger: 5 });
+  o += words([{ t: 'Eight', fill: COL.gold }, { t: 'different engines.' }], W / 2, 420, f, T(1.2), { size: 96, weight: 700, stagger: 5 });
+  o += chipRow(W / 2, 535, ENG, 14, { size: 22 }, i => { const sp = spring(f - T(1.44) - i * 3, { damping: 11, stiffness: 190 }); return { sc: sp, op: clamp01(sp * 1.5) }; });
+  const fp = 1 + .25 * Math.sin(Math.PI * prog(f, T(3.78), T(3.78) + 10));
+  const sp3 = measure(' ', 60, 600, SANS), wA = measure('And every one of them is', 60, 600, SANS), wF = measure('free', 60, 800, SANS), wT = measure('to use.', 60, 600, SANS);
+  const left = W / 2 - (wA + wF + wT + 2 * sp3) / 2, fx0 = left + wA + sp3;
+  o += words([{ t: 'And every one of them is' }], left + wA / 2, 690, f, T(2.6), { size: 60, weight: 600, stagger: 6 });
+  const tf = prog(f, T(3.78) - 2, T(3.78) + 8, eout);
+  if (tf > 0) o += `<g transform="translate(${n1(fx0 + wF / 2)} 690) scale(${n3(fp)})">${txt(0, (1 - tf) * 24, 'free', { size: 60, weight: 800, fill: COL.gold, op: tf, anchor: 'middle' })}</g>`;
+  o += txt(fx0 + wF + sp3, 690 + (1 - prog(f, T(4.3), T(4.3) + 14, eout)) * 24, 'to use.', { size: 60, weight: 600, op: prog(f, T(4.3), T(4.3) + 14) });
+  o += words([{ t: "Let's meet the cast." }], W / 2, 820, f, T(5.28), { size: 46, weight: 500, stagger: 5, fill: COL.muted });
+  return o + '</g>';
+}
+
+
+// ============================================================ scene 3: roll call — one card per engine
+const CARD_CLIPS = { sapi: ['sapi'], piper: ['piper1', 'piper2'], kitten: ['kitten'], kokoro: ['kokoro1', 'kokoro2', 'kokoro3'], super: ['super1', 'super2', 'super3', 'super4'], pocket: ['pocket1', 'pocket2'], cb: ['cb1', 'cb2', 'cb3'], edge: ['edge1', 'edge2'] };
+const PIPER_V = ['en_US-lessac-medium', 'de_DE-thorsten-high', 'en_US-ryan-high', 'fr_FR-siwis-medium', 'es_ES-davefx-medium', 'en_GB-alba-medium', 'it_IT-riccardo-x_low', 'en_GB-northern_english_male-medium', 'nl_NL-mls-medium', 'pl_PL-gosia-medium', 'uk_UA-lada-x_low', 'pt_BR-faber-medium'];
+const LOCALES = ['en-US', 'en-GB', 'en-AU', 'en-IN', 'fr-FR', 'de-DE', 'es-MX', 'it-IT', 'ja-JP', 'ko-KR', 'zh-CN', 'pt-BR', 'hi-IN', 'ar-EG', 'nl-NL', 'sv-SE', 'pl-PL', 'tr-TR', 'cy-GB', 'ga-IE', 'sw-KE', 'th-TH', 'vi-VN', 'uk-UA'];
+const sec = s => Math.round(s * FPS);
+
+function winLogo(cx, cy, sz, sp, col) {
+  const g = sz * .06, q = (sz - g) / 2; let o = '';
+  [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(([i, j], n) => { const t = spring(sp - n * 3, { damping: 12 }); if (t > 0) o += `<rect x="${n1(cx - sz / 2 + i * (q + g))}" y="${n1(cy - sz / 2 + j * (q + g))}" width="${n1(q)}" height="${n1(q)}" fill="${col}" transform="translate(${n1((1 - t) * (i ? 30 : -30))} ${n1((1 - t) * (j ? 30 : -30))})" opacity="${n3(clamp01(t))}"/>`; });
+  return o;
+}
+function piBoard(x, y, t, col) {
+  if (t <= 0) return '';
+  let o = `<rect x="0" y="0" width="230" height="150" rx="12" fill="#1F5F35" stroke="${col}" stroke-width="3"/><rect x="80" y="45" width="60" height="60" rx="4" fill="#222"/>`;
+  for (let i = 0; i < 20; i++) o += `<circle cx="${18 + i * 10}" cy="14" r="3" fill="#E8C66A"/>`;
+  [[0, 50], [0, 95]].forEach(([dx, dy]) => o += `<rect x="${200 + dx}" y="${dy}" width="40" height="34" rx="3" fill="#B8BCC8"/>`);
+  return `<g transform="translate(${n1(x)} ${n1(y + (1 - t) * 40)})" opacity="${n3(t)}">${o}${txt(115, 182, 'runs on a Raspberry Pi', { size: 22, fill: col, anchor: 'middle' })}</g>`;
+}
+function floppy(x, y, s, col, op) { return op > .001 ? `<g transform="translate(${n1(x)} ${n1(y)}) scale(${n3(s)})" opacity="${n3(op)}"><path d="M0 0 H34 L40 6 V40 H0 Z" fill="${col}" fill-opacity=".85"/><rect x="8" y="0" width="20" height="13" fill="${COL.night}"/><rect x="22" y="2" width="4" height="9" fill="${col}"/><rect x="6" y="22" width="28" height="16" rx="2" fill="${COL.light}"/></g>` : ''; }
+function gpuIcon(x, y, t, cross) {
+  if (t <= 0) return '';
+  let o = `<rect x="0" y="0" width="200" height="90" rx="10" fill="${COL.panel}" stroke="${COL.muted}" stroke-width="3"/><circle cx="60" cy="45" r="28" fill="none" stroke="${COL.muted}" stroke-width="3"/><circle cx="140" cy="45" r="28" fill="none" stroke="${COL.muted}" stroke-width="3"/><rect x="20" y="90" width="120" height="12" fill="${COL.muted}"/>${txt(100, 140, 'GPU', { size: 24, font: MONO, fill: COL.muted, anchor: 'middle' })}`;
+  if (cross > 0) o += `<line x1="-14" y1="-14" x2="${n1(-14 + 228 * cross)}" y2="${n1(-14 + 130 * cross)}" stroke="#FF5A5A" stroke-width="10" stroke-linecap="round"/>`;
+  return `<g transform="translate(${n1(x)} ${n1(y)})" opacity="${n3(t)}">${o}</g>`;
+}
+
+const EXTRA = {
+  sapi(f, s, c, e) {
+    const a = s.at.sapi;
+    return winLogo(330, 680, 220, f - 4, e.col) + (() => { const t = prog(f, a + LEN('sapi') * .72, a + LEN('sapi') * .72 + 10, eback); return pill(560, 680, 'OFFLINE  ✓', { size: 30, fill: e.col, bg: e.col, bgOp: .12, stroke: e.col, sc: t, op: clamp01(t) }); })();
+  },
+  piper(f, s, c, e) {
+    const a1 = s.at.piper1, a2 = s.at.piper2, n = PIPER_V.length;
+    const pos = f < a2 ? mix(-14, 2, prog(f, a1 - 8, a1 + 22, eout)) : mix(2, 7 + n, prog(f, a2 - 4, a2 + 22, eout));
+    let o = `<rect x="120" y="520" width="740" height="160" rx="18" fill="${COL.panel}" stroke="${COL.line}" stroke-width="2"/><rect x="120" y="573" width="740" height="54" fill="${e.col}" fill-opacity=".1"/>`;
+    const base = Math.floor(pos), fr = pos - base;
+    for (let i = -2; i <= 3; i++) { const dy = (i - fr) * 50, op = 1 - Math.abs(dy) / 85; if (op > 0) o += txt(490, 611 + dy, PIPER_V[((base + i) % n + n) % n], { size: 30, font: MONO, fill: Math.abs(dy) < 12 ? e.col : COL.muted, anchor: 'middle', op }); }
+    o += txt(140, 505, 'VOICE', { size: 18, font: MONO, fill: COL.muted, ls: 3 });
+    return o + piBoard(140, 715, prog(f, a1 + sec(1.92), a1 + sec(1.92) + 14, eout), e.col);
+  },
+  kitten(f, s, c, e) {
+    const a = s.at.kitten, L = LEN('kitten'), p = prog(f, a + L * .45, a + L * .8, eout);
+    const q = prog(f, a + L * .45 - 10, a + L * .45);
+    let o = txt(120, 620, `${p >= 1 ? '< 25' : Math.max(1, Math.round(25 * p))} MB`, { size: 120, weight: 800, fill: e.col, op: q });
+    o += txt(120, 670, 'the entire model', { size: 28, fill: COL.muted, op: q });
+    for (let i = 0; i < 17; i++) { const t = prog(f, a + L * .5 + i * 2, a + L * .5 + i * 2 + 10, eback); o += floppy(120 + (i % 9) * 58, 720 + Math.floor(i / 9) * 60, .9 * t, e.col, clamp01(t)); }
+    return o + txt(120, 870, '≈ 17 floppy disks', { size: 24, fill: COL.muted, op: prog(f, a + L * .8, a + L * .8 + 10) });
+  },
+  kokoro(f, s, c, e) {
+    const a = s.at.kokoro1, t = prog(f, a + sec(1.22), a + sec(1.22) + 22, eout);
+    let o = txt(120, 610, `${Math.round(82 * t)}M`, { size: 120, weight: 800, fill: e.col, op: clamp01(t * 3) }) + txt(400, 610, 'parameters', { size: 32, fill: COL.muted, op: t });
+    [['af_heart', 'US English', 'kokoro1'], ['bm_george', 'UK English', 'kokoro2'], ['ff_siwis', 'French', 'kokoro3']].forEach(([v, l, k], i) => {
+      const st = s.at[k], on = c.k === k, seen = f >= st - 4, y = 690 + i * 64;
+      o += pill(120, y, v, { size: 26, font: MONO, fill: on ? COL.night : COL.light, bg: on ? e.col : COL.panel, stroke: seen ? e.col : COL.line, op: seen ? 1 : .35, sc: on ? 1 + .06 * Math.sin(Math.PI * prog(f, st, st + 10)) : 1 });
+      o += txt(370, y + 9, l, { size: 24, fill: on ? e.col : COL.muted, op: seen ? 1 : .35 });
+    });
+    return o;
+  },
+  super(f, s, c, e) {
+    let o = ''; const L4 = [['EN', 'super1'], ['ES', 'super2'], ['DE', 'super3'], ['KO', 'super4']];
+    L4.forEach(([l, k], i) => { const st = s.at[k], on = c.k === k, seen = f >= st - 4, t = prog(f, st - 4, st + 8, eback); o += pill(120 + i * 150, 560, l, { size: 40, weight: 800, fill: on ? COL.night : e.col, bg: on ? e.col : COL.panel, stroke: e.col, padX: 26, op: seen ? 1 : .3, sc: seen ? mix(.8, 1, t) : .9 }); });
+    for (let i = 0; i < 31; i++) {
+      const lk = { 0: 'super1', 7: 'super2', 13: 'super3', 22: 'super4' }[i], lit = lk && f >= s.at[lk] - 4, x = 136 + (i % 11) * 62, y = 680 + Math.floor(i / 11) * 62;
+      o += `<circle cx="${x}" cy="${y}" r="${lit ? 16 : 11}" fill="${lit ? e.col : COL.line}" opacity="${n3(prog(f, 4 + i, 14 + i))}"/>`;
+    }
+    return o + txt(120, 880, '31 languages · one 99M-param model', { size: 24, fill: COL.muted, op: prog(f, 20, 34) });
+  },
+  pocket(f, s, c, e) {
+    const a = s.at.pocket1, cx = 330, cy = 800, R = 190, mx = 4;
+    const v = mix(0, 3.2, prog(f, a + sec(3.2), a + sec(4.56), eout)) + .05 * Math.sin(f * .7) * prog(f, a + sec(4.56), a + sec(4.8));
+    const ang = q => Math.PI * (1 + q / mx);
+    let o = `<path d="M${cx - R} ${cy} A${R} ${R} 0 0 1 ${cx + R} ${cy}" fill="none" stroke="${COL.line}" stroke-width="18" stroke-linecap="round"/><path d="M${cx - R} ${cy} A${R} ${R} 0 0 1 ${n1(cx + Math.cos(ang(v)) * R)} ${n1(cy + Math.sin(ang(v)) * R)}" fill="none" stroke="${e.col}" stroke-width="18" stroke-linecap="round"/>`;
+    for (let q = 0; q <= mx; q++) o += txt(cx + Math.cos(ang(q)) * (R + 40), cy + Math.sin(ang(q)) * (R + 40) + 8, `${q}×`, { size: 22, font: MONO, fill: q === 1 ? COL.light : COL.muted, anchor: 'middle' });
+    o += `<line x1="${cx}" y1="${cy}" x2="${n1(cx + Math.cos(ang(v)) * (R - 30))}" y2="${n1(cy + Math.sin(ang(v)) * (R - 30))}" stroke="${COL.light}" stroke-width="6" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="12" fill="${COL.light}"/>`;
+    o += txt(cx, cy + 50, 'speed vs real time', { size: 22, fill: COL.muted, anchor: 'middle' });
+    const b = s.at.pocket2; return `<g opacity="${n3(prog(f, 4, 16))}">${o}</g>` + gpuIcon(620, 640, prog(f, b - 6, b + 6), prog(f, b + sec(.3), b + sec(.3) + 10, eout));
+  },
+  cb(f, s, c, e) {
+    const a2 = s.at.cb2, a3 = s.at.cb3, fade = 1 - prog(f, a3 - 8, a3 + 4);
+    const val = mix(.25, 1.3, prog(f, a2 - 6, a2 + 14, eback)), shake = c.k === 'cb2' ? envAt('cb2', c.lf) * 4 * Math.sin(f * 2.1) : 0, X = v => 160 + v / 2 * 640;
+    let o = '';
+    if (fade > 0) {
+      o += txt(160, 545, 'exaggeration', { size: 24, font: MONO, fill: COL.muted }) + txt(800, 545, val.toFixed(2), { size: 30, font: MONO, fill: e.col, anchor: 'end' });
+      o += `<line x1="160" y1="620" x2="800" y2="620" stroke="${COL.line}" stroke-width="10" stroke-linecap="round"/><line x1="160" y1="620" x2="${n1(X(val))}" y2="620" stroke="${e.col}" stroke-width="10" stroke-linecap="round"/><circle cx="${n1(X(val) + shake)}" cy="${n1(620 - Math.abs(shake))}" r="22" fill="${COL.light}" stroke="${e.col}" stroke-width="5"/>`;
+      o += txt(160, 680, 'calm', { size: 26, fill: val < .7 ? e.col : COL.muted }) + txt(800, 680, 'excited!', { size: 26, fill: val > .7 ? e.col : COL.muted, anchor: 'end' });
+      o = `<g opacity="${n3(fade)}">${o}</g>`;
+    }
+    const t3 = prog(f, a3 - 2, a3 + 14, eout);
+    if (t3 > 0) {
+      let q = txt(120, 560, 'a few seconds of the narrator…', { size: 24, fill: COL.muted });
+      q += waveBars('n_title', 120, 630, 300, 80, 1e9, COL.light, 46);
+      q += `<path d="M450 630 H520 M500 612 L522 630 L500 648" fill="none" stroke="${e.col}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
+      q += txt(550, 560, '…cloned', { size: 24, fill: e.col }) + waveBars('cb3', 550, 630, 300, 80, f - a3, e.col, 46);
+      const fam = prog(f, a3 + sec(3.56), a3 + sec(3.56) + 12, eback);
+      q += pill(490, 780, 'Sound familiar?', { size: 34, anchor: 'middle', fill: e.col, bg: e.col, bgOp: .14, stroke: e.col, sc: fam, op: clamp01(fam) });
+      o += `<g opacity="${n3(t3)}">${q}</g>`;
+    }
+    return o;
+  },
+  edge(f, s, c, e) {
+    const a = s.at.edge1, b = s.at.edge2, t0 = a + sec(5.66) - 30; let o = '';
+    LOCALES.forEach((l, i) => {
+      const t = prog(f, t0 + i * 1.5, t0 + i * 1.5 + 10, eback), hi = l === 'en-AU' && f >= b - 4;
+      o += pill(120 + (i % 4) * 182, 540 + Math.floor(i / 4) * 58, l, { size: 24, font: MONO, padX: 22, fill: hi ? COL.night : COL.light, bg: hi ? e.col : COL.panel, stroke: hi ? e.col : COL.line, sc: t * (hi ? 1.12 : 1), op: clamp01(t) });
+    });
+    return o + txt(120, 905, '…and hundreds more voices', { size: 24, fill: COL.muted, op: prog(f, t0 + 40, t0 + 52) });
+  },
+};
+
+function sCard(f, d, s, e, idx) {
+  const keys = CARD_CLIPS[e.id], c = cur(s, f, keys), fade = fadeIO(f, d, 10, 10), nm = spring(f - 2, { damping: 13, stiffness: 160 });
+  let o = bg(f, e.id, 1, 480, 400) + `<g opacity="${n3(fade)}">`;
+  o += txt(120, 130, `MEET THE CAST  ${String(idx + 1).padStart(2, '0')} / 08`, { size: 22, font: MONO, fill: COL.muted, ls: 4, op: prog(f, 0, 10) });
+  o += `<g transform="translate(${n1((1 - nm) * -60)} 0)">${txt(120, 300, e.name, { size: 96, weight: 800, fill: e.col, op: clamp01(nm * 1.4) })}</g>`;
+  o += txt(122, 360, e.maker, { size: 30, fill: COL.light, op: prog(f, 6, 18) });
+  let tx = 120; e.tags.forEach((tg, i) => { const t = prog(f, 8 + i * 3, 20 + i * 3, eback); o += pill(tx, 430, tg, { size: 22, sc: t, op: clamp01(t), stroke: e.col }); tx += pillW(tg, 22) + 12; });
+  o += EXTRA[e.id](f, s, c, e);
+  // right panel: orb, voice id, waveform, karaoke subtitle
+  const pin = prog(f, 0, 14, eout);
+  o += `<g opacity="${n3(pin)}" transform="translate(${n1((1 - pin) * 40)} 0)"><rect x="960" y="170" width="840" height="710" rx="28" fill="${COL.panel}" fill-opacity=".72" stroke="${COL.line}" stroke-width="2"/>`;
+  o += orb(1380, 370, 100, c.on ? envAt(c.k, c.lf) : 0, e.col, f);
+  o += txt(1380, 575, `voice: ${VOICE_ID[c.k]}`, { size: 26, font: MONO, fill: COL.muted, anchor: 'middle' });
+  o += waveBars(c.k, 1010, 650, 740, 80, c.started ? c.lf : 0, e.col);
+  const ko = c.k === 'super4', tr = TRANS[c.k];
+  o += subtitle(SUBS[c.k], 1380, tr ? 760 : 780, 740, c.started ? c.p : 0, e.col, { size: 34, font: ko ? KR : SANS });
+  if (tr) o += txt(1380, 842, tr, { size: 26, italic: true, fill: COL.muted, anchor: 'middle', op: prog(c.lf, 4, 14) });
+  o += '</g>';
+  o += chipRow(W / 2, 985, ENG, 12, { size: 18 }, i => ({ active: i <= idx, op: i === idx ? 1 : .55 }));
+  return o + '</g>';
+}
+const CARDS = ENG.map((e, i) => {
+  const s = mk(e.id, (f, d, s) => sCard(f, d, s, e, i));
+  fx(s, 'whoosh', 0); wait(s, 16);
+  CARD_CLIPS[e.id].forEach((k, j, a) => say(s, k, j < a.length - 1 ? 6 : 0));
+  return wait(s, 20);
+});
+
+
+// ============================================================ scene 4: the wall — what a GPU unlocks
+const WALL = ['VibeVoice', 'Dia', 'Orpheus', 'Parler-TTS', 'F5-TTS', 'XTTS-v2', 'Qwen3-TTS', 'NeuTTS Air', 'CosyVoice 3', 'Fish Audio S2', 'Sesame CSM', 'Zonos', 'IndexTTS2', 'Spark-TTS', 'StyleTTS 2', 'OuteTTS', 'Kyutai TTS', 'VoxCPM 2', 'Voxtral TTS', 'Maya1', 'Higgs Audio'];
+const WALL_HI = [[0, 5.12, 'Microsoft', 'long multi-speaker podcasts', '#7FB2FF'], [1, 7.66, 'Nari Labs', 'realistic two-person dialogue', '#FF9ED2'], [2, 9.16, 'Canopy Labs', 'laughs, sighs & emotion tags', COL.gold], [3, 11.86, 'Hugging Face', 'designs a voice from a text description', COL.teal]];
+function sWall(f, d, s) {
+  const b = s.at.n_wall, T = x => b + sec(x), fade = fadeIO(f, d, 10, 14);
+  let o = bg(f, null) + glow('white', 960, 520, 1000) + `<g opacity="${n3(fade)}">`;
+  // laptop with the eight engines inside
+  const lp = prog(f, 0, 18, eout);
+  o += `<g opacity="${n3(lp)}" transform="translate(0 ${n1((1 - lp) * 30)})"><rect x="150" y="260" width="520" height="320" rx="18" fill="${COL.panel}" stroke="${COL.light}" stroke-width="4"/><path d="M110 590 H710 L680 625 H140 Z" fill="${COL.line}" stroke="${COL.light}" stroke-width="4" stroke-linejoin="round"/>`;
+  ENG.forEach((e, i) => { const t = prog(f, 6 + i * 2, 18 + i * 2, eback); o += chip(290 + (i % 2) * 240, 312 + Math.floor(i / 2) * 72, e, { size: 20, sc: t, op: clamp01(t) }); });
+  o += txt(410, 675, 'Runs on this laptop · CPU only', { size: 26, fill: COL.muted, anchor: 'middle' }) + '</g>';
+  // + a graphics card
+  const g = prog(f, T(2.54) - 4, T(2.54) + 12, eback);
+  if (g > 0) o += `<g transform="translate(${n1((1 - g) * -300)} 0)">${txt(225, 790, '+', { size: 80, weight: 800, fill: COL.gold, anchor: 'middle', op: clamp01(g) })}${gpuIcon(300, 730, clamp01(g), 0)}</g>`;
+  o += txt(1304, 140, 'Got a GPU? Dozens more open models:', { size: 40, weight: 700, anchor: 'middle', op: prog(f, T(3.5), T(3.5) + 12) });
+  // the wall of names
+  const hiNow = WALL_HI.filter(h => f >= T(h[1]) - 4).pop();
+  WALL.forEach((nm, i) => {
+    const col = i % 3, row = Math.floor(i / 3), x = 820 + col * 336, y = 200 + row * 86, t = prog(f, T(3.96) - 6 + i * 1.6, T(3.96) + 6 + i * 1.6, eback);
+    const h = WALL_HI.find(q => q[0] === i), seen = h && f >= T(h[1]) - 4, now = hiNow && hiNow[0] === i, ac = h ? h[4] : COL.line;
+    const pulse = now ? 1 + .06 * Math.sin(Math.PI * prog(f, T(h[1]) - 4, T(h[1]) + 8)) : 1;
+    if (t > 0) o += `<g opacity="${n3(clamp01(t) * (hiNow && !now && !seen ? .55 : 1))}" transform="translate(${x + 156} ${y + 36}) scale(${n3(t * pulse)})"><rect x="-156" y="-36" width="312" height="72" rx="14" fill="${seen ? ac : COL.panel}" fill-opacity="${seen ? .18 : 1}" stroke="${seen ? ac : COL.line}" stroke-width="${now ? 4 : 2}"/>${txt(0, 10, nm, { size: 28, weight: 600, anchor: 'middle', fill: seen ? COL.light : COL.muted })}</g>`;
+  });
+  if (hiNow) {
+    const [i, at, who, what, ac] = hiNow, t = prog(f, T(at) - 2, T(at) + 10, eout);
+    o += `<g opacity="${n3(t)}" transform="translate(0 ${n1((1 - t) * 16)})">${txt(1304, 878, WALL[i], { size: 44, weight: 800, fill: ac, anchor: 'middle' })}${txt(1304, 926, `${who} · ${what}`, { size: 28, fill: COL.light, anchor: 'middle' })}</g>`;
+  }
+  return o + '</g>';
+}
+
+// ============================================================ scene 5: finale — everybody says "free"
+const FIN = ENG.map(e => 'f_' + e.id);
+function sFinale(f, d, s) {
+  const fade = fadeIO(f, d, 10, 14); let o = bg(f, null) + `<g opacity="${n3(fade)}">`;
+  o += txt(960, 250, 'So what do they all cost?', { size: 56, weight: 700, anchor: 'middle', op: prog(f, 0, 12) });
+  FIN.forEach((k, i) => {
+    const e = ENG[i], x = 960 + (i - 3.5) * 210, y = 480, a = s.at[k], t = spring(f - a + 2, { damping: 10, stiffness: 210 }), on = f - a >= -2 && f - a < LEN(k);
+    const amp = envAt(k, f - a), ap = prog(f, 4 + i * 2, 14 + i * 2);
+    o += `<circle cx="${x}" cy="${y}" r="${n1(70 + amp * 10)}" fill="${t > 0 ? e.col : COL.panel}" fill-opacity="${t > 0 ? .18 : 1}" stroke="${e.col}" stroke-width="${on ? 6 : 3}" opacity="${n3(ap)}"/>`;
+    if (on) o += `<circle cx="${x}" cy="${y}" r="${n1(70 + 40 * prog(f - a, 0, 14))}" fill="none" stroke="${e.col}" stroke-width="3" opacity="${n3(1 - prog(f - a, 0, 14))}"/>`;
+    if (t > 0) o += `<g transform="translate(${x} ${y}) scale(${n3(t)})">${txt(0, 12, 'FREE', { size: 34, weight: 800, fill: e.col, anchor: 'middle', ls: 1 })}</g>`;
+    o += txt(x, y + 120, e.name, { size: 22, fill: t > 0 ? COL.light : COL.muted, anchor: 'middle', op: ap });
+  });
+  const last = s.at[FIN[7]] + LEN(FIN[7]), z = prog(f, last - 4, last + 12, eback);
+  o += pill(960, 760, 'Open weights · open source · free to use', { size: 34, anchor: 'middle', fill: COL.gold, bg: COL.gold, bgOp: .12, stroke: COL.gold, sc: z, op: clamp01(z) });
+  o += txt(960, 840, 'check each licence before commercial use', { size: 22, fill: COL.muted, anchor: 'middle', op: prog(f, last + 8, last + 20) });
+  return o + '</g>';
+}
+
+// ============================================================ scene 6: outro
+function sOutro(f, d, s) {
+  const b = s.at.n_outro, T = x => b + sec(x);
+  let o = bg(f, null) + glow('white', 960, 400, 800);
+  o += mark(960, 330, 200, prog(f, 0, 36));
+  o += words([{ t: 'One script.' }, { t: 'Many voices.', fill: COL.gold }], 960, 600, f, T(0) - 2, { size: 80, weight: 700, stagger: 30 });
+  o += words([{ t: 'Made with GitHub Copilot + Claude Opus 5.5' }], 960, 690, f, T(2.3), { size: 40, weight: 500, fill: COL.muted, stagger: 4 });
+  o += chipRow(960, 820, ENG, 12, { size: 18 }, i => ({ op: prog(f, T(4.6) + i * 2, T(4.6) + 10 + i * 2) * .8 }));
+  return o + `<rect width="${W}" height="${H}" fill="#000" opacity="${n3(Math.max(1 - prog(f, 0, 10), prog(f, d - 30, d)))}"/>`;
+}
+
+// ============================================================ assembly
+const sc = [];
+{
+  const r = mk('relay', sRelay); wait(r, 24); RELAY.forEach((k, i) => say(r, k, i < RELAY.length - 1 ? 3 : 0)); wait(r, 36); sc.push(r);
+  const t = mk('title', sTitle); wait(t, 14); say(t, 'n_title'); wait(t, 18); fx(t, 'chime', t.at.n_title + sec(3.78)); fx(t, 'whoosh', t.t - 8); sc.push(t);
+  sc.push(...CARDS);
+  const w = mk('wall', sWall); fx(w, 'whoosh', 0); wait(w, 14); say(w, 'n_wall'); wait(w, 24);
+  fx(w, 'clunk', w.at.n_wall + sec(2.54)); fx(w, 'charge', w.at.n_wall + sec(3.9)); WALL_HI.forEach(h => fx(w, 'click', w.at.n_wall + sec(h[1]) - 4)); sc.push(w);
+  const fi = mk('finale', sFinale); wait(fi, 30);
+  FIN.forEach((k, i) => { fi.at[k] = fi.t; fi.cues.push([k, fi.t]); fx(fi, 'pop', fi.t - 2); fi.t += i < FIN.length - 1 ? Math.max(22, LEN(k) + 4) : LEN(k); });
+  fx(fi, 'chime', fi.t - 2); wait(fi, 60); sc.push(fi);
+  const ou = mk('outro', sOutro); fx(ou, 'chime', 6); wait(ou, 16); say(ou, 'n_outro'); wait(ou, 60); sc.push(ou);
+}
+let acc = 0; for (const s of sc) { s.from = acc; s.dur = s.t; acc += s.dur; Object.defineProperty(s.render, 'name', { value: s.name }); }
+const SCENES = sc, TOTAL = acc;
+const VO_CUES = sc.flatMap(s => s.cues.map(([k, r]) => [k, s.from + r, 'v']));
+const SFX_CUES = sc.flatMap(s => s.sfx.map(([r, n]) => [s.from + r, n])).sort((a, b) => a[0] - b[0]);
+const SCENE_T = sc.map(s => [s.name, s.from / FPS]);
+
+
+const AU = { ctx: null, bufs: {}, live: [], hum: null, on: true };
+function b64buf(b64) { const bin = atob(b64), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; }
+async function audioInit() {
+  if (AU.ctx) { if (AU.ctx.state !== 'running') await AU.ctx.resume(); return; }
+  await audioSetup(AU.ctx = new AudioContext());
+}
+async function audioSetup(ctx) {
+  AU.master = ctx.createDynamicsCompressor(); AU.master.threshold.value = -14; AU.master.ratio.value = 3;
+  const mg = ctx.createGain(); mg.gain.value = .9; AU.master.connect(mg).connect(ctx.destination);
+  // simple generated hall impulse for wizardry and booms
+  const len = ctx.sampleRate * 2.2, ir = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+  AU.verb = ctx.createConvolver(); AU.verb.buffer = ir; AU.verb.connect(AU.master);
+  AU.noise = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate); const nd = AU.noise.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  if (window.VOICE) await Promise.all(Object.entries(VOICE).map(async ([k, v]) => { AU.bufs[k] = await ctx.decodeAudioData(b64buf(v)); }));
+}
+const vol = (ctx, v) => { const g = ctx.createGain(); g.gain.value = v; return g; };
+function chain(kind) {
+  const ctx = AU.ctx, inp = ctx.createGain(); let out = inp;
+  if (kind === 'gandalf') {
+    const ls = ctx.createBiquadFilter(); ls.type = 'lowshelf'; ls.frequency.value = 220; ls.gain.value = 5;
+    inp.connect(ls); ls.connect(vol(ctx, 1)).connect(AU.master); ls.connect(vol(ctx, .42)).connect(AU.verb); return inp;
+  }
+  if (kind === 'vader') { // helmet resonance + respirator grit
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 70;
+    const pk = ctx.createBiquadFilter(); pk.type = 'peaking'; pk.frequency.value = 180; pk.gain.value = 4; pk.Q.value = .9;
+    const ws = ctx.createWaveShaper(), cv = new Float32Array(1024); for (let i = 0; i < 1024; i++) { const x = i / 511.5 - 1; cv[i] = Math.tanh(1.2 * x) / Math.tanh(1.2); } ws.curve = cv;
+    const dl = ctx.createDelay(); dl.delayTime.value = .007; const fb = vol(ctx, .2); dl.connect(fb).connect(dl);
+    inp.connect(hp).connect(pk).connect(ws); const pres = filt('peaking', 2800, 1); pres.gain.value = 5; ws.connect(pres).connect(vol(ctx, .95)).connect(AU.master); ws.connect(dl); dl.connect(vol(ctx, .22)).connect(AU.master); ws.connect(vol(ctx, .12)).connect(AU.verb);
+    return inp;
+  }
+  inp.connect(AU.master); inp.connect(vol(ctx, .06)).connect(AU.verb); return inp;
+}
+function playClip(key, kind, offset) {
+  const b = AU.bufs[key]; if (!b || offset >= b.duration) return;
+  const src = AU.ctx.createBufferSource(); src.buffer = b; src.connect(chain(kind)); src.start(AU.at ?? 0, Math.max(0, offset)); AU.live.push(src);
+}
+// ---- synthesised effects
+function env(g, t, a, peak, d) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + d); }
+function noiseSrc(t, dur) { const s = AU.ctx.createBufferSource(); s.buffer = AU.noise; s.loop = true; s.start(t, Math.random()); s.stop(t + dur); AU.live.push(s); return s; }
+function osc(type, f, t, dur) { const o = AU.ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); o.start(t); o.stop(t + dur); AU.live.push(o); return o; }
+function filt(type, f, q = 1) { const b = AU.ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }
+
+function sfx(name) {
+  const ctx = AU.ctx, t = AU.at ?? ctx.currentTime + .01, M = AU.master, V = AU.verb;
+  const route = (node, dry, wet = 0) => { node.connect(vol(ctx, dry)).connect(M); if (wet) node.connect(vol(ctx, wet)).connect(V); };
+  if (name === 'chime') [523.3, 784, 1046.5, 1568].forEach((f, i) => { const g = ctx.createGain(); env(g, t + i * .07, .01, .12, 1.6); osc('sine', f, t + i * .07, 1.8).connect(g); route(g, 1, .5); });
+  if (name === 'charge') {
+    const n = noiseSrc(t, 1.5), bp = filt('bandpass', 400, 6); bp.frequency.exponentialRampToValueAtTime(5000, t + 1.4);
+    const g = ctx.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.3, t + 1.3); g.gain.exponentialRampToValueAtTime(.0001, t + 1.45);
+    n.connect(bp).connect(g); route(g, 1, .6);
+    for (let i = 0; i < 5; i++) { const o = osc('sine', 300 * (i + 1), t, 1.5); o.frequency.exponentialRampToValueAtTime(900 * (i + 1), t + 1.4); const og = ctx.createGain(); og.gain.setValueAtTime(.0001, t); og.gain.exponentialRampToValueAtTime(.035, t + 1.2); og.gain.exponentialRampToValueAtTime(.0001, t + 1.45); o.connect(og); route(og, 1, .7); }
+  }
+  if (name === 'thunk' || name === 'clunk') { const o = osc('sine', 160, t, .3); o.frequency.exponentialRampToValueAtTime(45, t + .2); const g = ctx.createGain(); env(g, t, .002, .7, .25); o.connect(g); route(g, 1, .15); const n = noiseSrc(t, .08), ng = ctx.createGain(); env(ng, t, .001, .35, .06); n.connect(filt('lowpass', 2500)).connect(ng); route(ng, 1); }
+  if (name === 'clunk') { const o = osc('triangle', 880, t, .4), g = ctx.createGain(); env(g, t, .002, .12, .3); o.connect(g); route(g, 1, .3); }
+  if (name === 'pop') { const o = osc('sine', 520, t, .14); o.frequency.exponentialRampToValueAtTime(1100, t + .08); const g = ctx.createGain(); env(g, t, .004, .18, .1); o.connect(g); route(g, 1, .15); }
+  if (name === 'click') { const n = noiseSrc(t, .05), g = ctx.createGain(); env(g, t, .001, .35, .035); n.connect(filt('highpass', 3000)).connect(g); route(g, 1); }
+  if (name === 'type') for (let i = 0; i < 10; i++) { const d = i * .08 + Math.random() * .02, n = noiseSrc(t + d, .04), g = ctx.createGain(); env(g, t + d, .001, .12, .03); n.connect(filt('bandpass', 2200 + Math.random() * 1500, 2)).connect(g); route(g, 1); }
+  if (name === 'deny') [0, .14].forEach(d => { const o = osc('square', 140, t + d, .12), g = ctx.createGain(); env(g, t + d, .004, .16, .09); o.connect(filt('lowpass', 1200)).connect(g); route(g, 1); });
+  if (name === 'whoosh') { const n = noiseSrc(t, .65), bp = filt('bandpass', 300, 1.2); bp.frequency.exponentialRampToValueAtTime(3000, t + .55); const g = ctx.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.3, t + .3); g.gain.exponentialRampToValueAtTime(.0001, t + .6); n.connect(bp).connect(g); route(g, 1, .3); }
+  if (name === 'scribble') for (let i = 0; i < 9; i++) { const d = i * .17 + Math.random() * .05, n = noiseSrc(t + d, .18), g = ctx.createGain(); env(g, t + d, .02, .07, .12); n.connect(filt('bandpass', 2800 + Math.random() * 1800, 3)).connect(g); route(g, 1); }
+    if (name === 'clash') {
+      const n = noiseSrc(t, .25), ng = ctx.createGain(); env(ng, t, .001, .4, .18); n.connect(filt('bandpass', 1800, 1.5)).connect(ng); route(ng, 1, .2);
+      [1230, 1870, 2950].forEach((f, i) => { const o = osc(i ? 'triangle' : 'square', f, t, .3), g = ctx.createGain(); env(g, t, .001, .05, .22); o.connect(g); route(g, 1, .3); });
+      const o = osc('sine', 200, t, .15); o.frequency.exponentialRampToValueAtTime(70, t + .1); const g = ctx.createGain(); env(g, t, .002, .45, .12); o.connect(g); route(g, 1);
+    }
+    if (name === 'boom') {
+      const o = osc('sine', 120, t, 1.1); o.frequency.exponentialRampToValueAtTime(30, t + .9); const g = ctx.createGain(); env(g, t, .004, .9, 1); o.connect(g); route(g, 1, .5);
+      const n = noiseSrc(t, 1), lp = filt('lowpass', 1400); lp.frequency.exponentialRampToValueAtTime(120, t + .8); const ng = ctx.createGain(); env(ng, t, .002, .6, .85); n.connect(lp).connect(ng); route(ng, 1, .6);
+    }
+  }
+// Offline render of the full soundtrack (used by export_mp4.py) -> base64 16-bit stereo WAV.
+// Math.random is seeded while rendering so noise/reverb/SFX jitter - and av_check's peak - are identical on every export.
+async function exportAudio() {
+  const rnd0 = Math.random; let sd = 0x5EED;
+  Math.random = () => { sd = (sd + 0x6D2B79F5) | 0; let t = Math.imul(sd ^ sd >>> 15, 1 | sd); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  try { return await renderSoundtrack(); } finally { Math.random = rnd0; }
+}
+async function renderSoundtrack() {
+  const SR = 48000, ctx = new OfflineAudioContext(2, Math.ceil(TOTAL / FPS * SR), SR), keep = AU.ctx;
+  AU.ctx = ctx; AU.live = []; await audioSetup(ctx);
+  VO_CUES.forEach(([k, at, kind]) => { AU.at = at / FPS; playClip(k, kind, 0); });
+  SFX_CUES.forEach(([at, n]) => { AU.at = at / FPS; sfx(n); });
+  AU.at = null;
+  const buf = await ctx.startRendering(); AU.ctx = keep; AU.live = [];
+  const n = buf.length, L = buf.getChannelData(0), R = buf.getChannelData(1), dv = new DataView(new ArrayBuffer(44 + n * 4));
+  const ws = (o, str) => [...str].forEach((c, i) => dv.setUint8(o + i, c.charCodeAt(0)));
+  ws(0, "RIFF"); dv.setUint32(4, 36 + n * 4, true); ws(8, "WAVEfmt "); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 2, true);
+  dv.setUint32(24, SR, true); dv.setUint32(28, SR * 4, true); dv.setUint16(32, 4, true); dv.setUint16(34, 16, true); ws(36, "data"); dv.setUint32(40, n * 4, true);
+  for (let i = 0; i < n; i++) { dv.setInt16(44 + i * 4, Math.max(-1, Math.min(1, L[i])) * 32767, true); dv.setInt16(46 + i * 4, Math.max(-1, Math.min(1, R[i])) * 32767, true); }
+  const u = new Uint8Array(dv.buffer); let bin = ""; for (let i = 0; i < u.length; i += 0x8000) bin += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000));
+  return btoa(bin);
+}
+function audioStop() { AU.live.forEach(n => { try { n.stop(); } catch (e) {} }); AU.live = []; }
+function audioSeek(F) {
+  if (!AU.ctx || !AU.on) return; audioStop();
+  VO_CUES.forEach(([k, at, kind]) => { if (F >= at) playClip(k, kind, (F - at) / FPS); });
+}
+function audioStep(prev, F) {
+  if (!AU.ctx || !AU.on || AU.ctx.state !== 'running') return;
+  VO_CUES.forEach(([k, at, kind]) => { if (prev < at && F >= at) playClip(k, kind, (F - at) / FPS); });
+  SFX_CUES.forEach(([at, n]) => { if (prev < at && F >= at && F - at < 6) sfx(n); });
+}
+const stage = document.getElementById('stage');
+const scrub = document.getElementById('scrub'); scrub.max = TOTAL - 1;
+const timeEl = document.getElementById('time'), playBtn = document.getElementById('play');
+let frame = 0, playing = true, last = null;
+
+function render(F) {
+  const s = SCENES.find(s => F >= s.from && F < s.from + s.dur) || SCENES[SCENES.length - 1];
+  GF = F; stage.innerHTML = DEFS + '<defs>' + CP_DEFS + XDEFS + '</defs>' + s.render(F - s.from, s.dur);
+  scrub.value = F; timeEl.textContent = (F / FPS).toFixed(1) + 's / ' + (TOTAL / FPS).toFixed(1) + 's';
+}
+function fit() { const k = Math.min(innerWidth / W, innerHeight / H); stage.style.transform = `scale(${k})`; }
+function tick(ts) {
+  if (playing) {
+    if (last == null) last = ts;
+    const elapsed = (ts - last) / (1000 / FPS);
+    if (elapsed >= 1) { const pf = frame; frame += Math.floor(elapsed); last = ts; audioStep(pf, frame); }
+    if (frame >= TOTAL) { frame = TOTAL - 1; playing = false; playBtn.textContent = 'Play'; audioStop(); }
+    render(frame);
+  }
+  requestAnimationFrame(tick);
+}
+async function toggle() { playing = !playing; last = null; if (playing && frame >= TOTAL - 1) frame = 0; playBtn.textContent = playing ? 'Pause' : 'Play'; hideStart(); if (playing) { await audioInit(); audioSeek(frame); } else audioStop(); }
+async function restart() { frame = 0; last = null; playing = true; playBtn.textContent = 'Pause'; hideStart(); await audioInit(); audioSeek(0); }
+playBtn.onclick = toggle;
+document.getElementById('restart').onclick = restart;
+scrub.oninput = () => { audioStop(); playing = false; playBtn.textContent = 'Play'; frame = +scrub.value; render(frame); };
+addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); toggle(); }
+  if (e.key === 'r' || e.key === 'R') restart();
+  if (e.key === 'h' || e.key === 'H') document.body.classList.toggle('clean');
+  if (e.key === 'm' || e.key === 'M') { AU.on = !AU.on; if (AU.on) audioSeek(frame); else audioStop(); document.getElementById('mute').textContent = AU.on ? 'Sound on' : 'Muted'; }
+});
+addEventListener('resize', fit); fit();
+
+const q = new URLSearchParams(location.search);
+if (q.has('frame')) { playing = false; document.body.classList.add('clean'); frame = +q.get('frame'); render(frame); }
+else { if (q.has('clean')) document.body.classList.add('clean'); playing = false; playBtn.textContent = 'Play'; render(0); document.getElementById('start').style.display = 'flex'; }
+function hideStart() { document.getElementById('start').style.display = 'none'; }
+document.getElementById('start').onclick = () => toggle();
+document.getElementById('mute').onclick = () => dispatchEvent(new KeyboardEvent('keydown', { key: 'm' }));
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
