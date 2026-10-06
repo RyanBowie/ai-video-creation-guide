@@ -684,34 +684,34 @@ Feel free to get creative with this design: cool animations, characters, whateve
 Take your time with the generation. Think creatively and make this something really new and fresh.</code><button type="button" class="btn btn-sm copy-btn" data-copy-target="prompt-text" data-jsonly hidden>Copy</button></div>
       <p class="small muted">Also in the repo as <a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/prompts/template-prompt.md">prompts/template-prompt.md</a>.</p>
       <h3 id="narration">Want narration?</h3>
-      <p>The starter prompt lets Copilot pick a voice. To choose the narrator yourself, add the box below after the prompt. Every voice runs free on your own laptop, with no account or API key.</p>
+      <p>The starter prompt lets Copilot pick a voice. To choose the narrator yourself, add the box below after the prompt. Every voice here is free, with no account or API key. Edge needs an internet connection; the rest run offline on your laptop. These are just an initial example: plenty of other narration models are available, and the video&#39;s <a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/voice-showcase/THIRD_PARTY_NOTICES.md">third-party notices</a> link more of them.</p>
       <div class="callout callout-accent" role="note">
         <p class="callout-title"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3M8 21h8"/></svg>Hear the voices first</p>
         <p>Watch <a href="#voice-showcase">Eight free AI voices, one sentence</a> to hear each engine, then pick a voice ID from the table. The full list of 40 voices, with style notes, is in <a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/skills/tts-voiceover/free_tts/voices.json">voices.json</a>, and the model links are in the video&#39;s <a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/voice-showcase/THIRD_PARTY_NOTICES.md">third-party notices</a>.</p>
       </div>
       <div class="table-wrap">
         <table>
-          <caption class="small muted">Free voice engines and example voice IDs. Licences change, so check each project&#39;s repo for its current licence and voice terms before you publish.</caption>
+          <caption class="small muted">A starting set of free voice engines, Microsoft voices first. Other narration models will work too. Licences change, so check each project&#39;s repo for its current licence and voice terms before you publish.</caption>
           <thead><tr><th scope="col">Engine</th><th scope="col">Example voice IDs</th><th scope="col">Notes</th><th scope="col">Licence</th></tr></thead>
           <tbody>
+            <tr><th scope="row"><a href="https://github.com/rany2/edge-tts">Edge neural voices</a></th><td><code>edge:andrew</code>, <code>edge:ava</code>, <code>edge:wizard</code></td><td>Uses an unofficial online endpoint. For paid or client work, use <a href="https://learn.microsoft.com/azure/ai-services/speech-service/">Azure AI Speech</a> instead.</td><td><a href="https://github.com/rany2/edge-tts">Check the repo</a> and the Microsoft service terms</td></tr>
+            <tr><th scope="row">Windows SAPI</th><td><code>sapi:david</code>, <code>sapi:zira</code></td><td>Built in and offline, but robotic. Good for a retro computer voice.</td><td><a href="https://www.microsoft.com/useterms">Windows terms</a></td></tr>
             <tr><th scope="row"><a href="https://github.com/hexgrad/kokoro">Kokoro-82M</a></th><td><code>kokoro:bm_george</code>, <code>kokoro:af_heart</code>, <code>kokoro:bf_emma</code></td><td>Natural and clear. The best all-rounder.</td><td><a href="https://github.com/hexgrad/kokoro">Check the repo</a></td></tr>
             <tr><th scope="row"><a href="https://github.com/KittenML/KittenTTS">Kitten TTS</a></th><td><code>kitten:4-f</code>, <code>kitten:5-m</code></td><td>Tiny and fast on a CPU.</td><td><a href="https://github.com/KittenML/KittenTTS">Check the repo</a></td></tr>
             <tr><th scope="row"><a href="https://github.com/supertone-oss-archive/supertonic">Supertonic</a></th><td><code>supertonic:M1</code>, <code>supertonic:F1</code></td><td>Very fast on a CPU.</td><td><a href="https://github.com/supertone-oss-archive/supertonic">Check the repo</a></td></tr>
             <tr><th scope="row"><a href="https://github.com/kyutai-labs/pocket-tts">Pocket TTS</a></th><td><code>pocket:alba</code>, <code>pocket:javert</code></td><td>Small CPU model from Kyutai.</td><td><a href="https://github.com/kyutai-labs/pocket-tts">Check the repo</a></td></tr>
             <tr><th scope="row"><a href="https://github.com/resemble-ai/chatterbox">Chatterbox</a></th><td><code>chatterbox:calm</code>, <code>chatterbox:excited</code></td><td>Emotion control. Adds an inaudible Perth watermark. Only clone a voice with the speaker&#39;s consent.</td><td><a href="https://github.com/resemble-ai/chatterbox">Check the repo</a></td></tr>
             <tr><th scope="row"><a href="https://github.com/OHF-Voice/piper1-gpl">Piper</a></th><td><code>piper:alan</code>, <code>piper:northern</code></td><td>Lots of voices and accents. Each voice has its own model card.</td><td><a href="https://github.com/OHF-Voice/piper1-gpl">Check the repo</a> and the <a href="https://huggingface.co/rhasspy/piper-voices">voice model cards</a></td></tr>
-            <tr><th scope="row"><a href="https://github.com/rany2/edge-tts">Edge neural voices</a></th><td><code>edge:andrew</code>, <code>edge:ava</code>, <code>edge:wizard</code></td><td>Uses an unofficial online endpoint. For paid or client work, use <a href="https://learn.microsoft.com/azure/ai-services/speech-service/">Azure AI Speech</a> instead.</td><td><a href="https://github.com/rany2/edge-tts">Check the repo</a> and the Microsoft service terms</td></tr>
-            <tr><th scope="row">Windows SAPI</th><td><code>sapi:david</code>, <code>sapi:zira</code></td><td>Built in and offline, but robotic. Good for a retro computer voice.</td><td><a href="https://www.microsoft.com/useterms">Windows terms</a></td></tr>
           </tbody>
         </table>
       </div>
-      <div class="code-box prompt-box"><code id="narration-prompt">Narration: use <mark>[kokoro:bm_george]</mark> for the narrator.
-<span class="ph-hint">(Your input: any voice ID from the table, for example kokoro:af_heart or pocket:alba.)</span>
+      <div class="code-box prompt-box"><code id="narration-prompt">Narration: use <mark>[edge:andrew]</mark> for the narrator.
+<span class="ph-hint">(Your input: any voice ID from the table, for example edge:ava, sapi:zira or kokoro:bm_george.)</span>
 
 Use the tts-voiceover skill. Run python ~/.copilot/skills/tts-voiceover/free_tts/free_tts.py --prompt followed by that voice ID, and add the voice notes it prints to this prompt and to the project&#39;s PROMPT.md. Write every narrator line to those notes, set that voice in make_voice.py, and put its credit line on the end card. If the engine isn&#39;t installed, run free_tts.py --doctor and install what it lists.
 
 <mark>[Character Voices]</mark>
-<span class="ph-hint">(Your input, optional: other voices for other characters, for example &ldquo;use kokoro:bf_emma for Sofia and edge:wizard for the wizard&rdquo;. Delete this section if you only want a narrator.)</span></code><button type="button" class="btn btn-sm copy-btn" data-copy-target="narration-prompt" data-jsonly hidden>Copy</button></div>
+<span class="ph-hint">(Your input, optional: other voices for other characters, for example &ldquo;use edge:ava for Sofia and edge:wizard for the wizard&rdquo;. Delete this section if you only want a narrator.)</span></code><button type="button" class="btn btn-sm copy-btn" data-copy-target="narration-prompt" data-jsonly hidden>Copy</button></div>
       <p class="small muted">This needs the <a href="#skills">reusable skills</a> installed. To list voices yourself, run <code>free_tts.py --list</code>, or <code>free_tts.py --list GB</code> to filter.</p>
       <h3>How to add your references</h3>
       <div class="grid-2">
