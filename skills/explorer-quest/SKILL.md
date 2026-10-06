@@ -479,3 +479,7 @@ These are user preferences learned across the Sofia videos:
   - The fonts are Windows system fonts.
   - The voices are Microsoft neural TTS through edge-tts.
 - Always ship `THIRD_PARTY_NOTICES.md` with any copy of the kit.
+
+## Free voices
+
+Free local voices: `LINES` in `make_voice.py` also accepts a catalogue ID (`"kokoro:bm_george"` or `{"id": "piper:alan", ...}`) from the **tts-voiceover** skill's `free_tts` picker. When the user picks one, append `free_tts.py --prompt <id>` output to the project's PROMPT.md under `## Voice notes` and write the lines to it.

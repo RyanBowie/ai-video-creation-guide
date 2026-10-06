@@ -299,3 +299,7 @@ The look is inspired by francozanardi/papermotion (paper-cutout animated shorts 
 Nintendo's Paper Mario. Paper Mario is a Nintendo trademark. Borrow the style ideas (paper, stickers, theatre, battle
 grammar), never its characters, assets or names, in published work. The Copilot mark here is a stylised stand-in;
 use the official brand asset for external work.
+
+## Free voices
+
+Free local voices: `LINES` in `make_voice.py` also accepts a catalogue ID (`"kokoro:bm_george"` or `{"id": "piper:alan", ...}`) from the **tts-voiceover** skill's `free_tts` picker. When the user picks one, append `free_tts.py --prompt <id>` output to the project's PROMPT.md under `## Voice notes` and write the lines to it.

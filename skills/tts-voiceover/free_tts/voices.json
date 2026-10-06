@@ -1,0 +1,126 @@
+{
+  "_about": "Voice picker catalogue for free_tts.py. A voice ID is '<engine>:<name>'. 'prompt' is the brief you append to a video's main prompt (PROMPT.md, 'Voice notes') when the user picks that voice. 'commercial': yes = licence allows it, no = non-commercial only, check = read the model card first. Licences checked June 2026; re-check before publishing.",
+  "engines": {
+    "edge": {
+      "name": "edge-tts (Microsoft neural voices)",
+      "repo": "https://github.com/rany2/edge-tts",
+      "runtime": "online - Microsoft Read Aloud service, any Python with edge-tts",
+      "install": "pip install --user edge-tts",
+      "licence": "code LGPL-3.0; voices under Microsoft service terms (unofficial endpoint - for paid/published work consider Azure AI Speech)",
+      "speed": "fast (network)",
+      "prompt": "Engine: edge-tts (online neural voice). Exact word timings come from the service. Punctuation is the only pacing control: '...' for a long beat, ',' for a short one. No SSML. Spell acronyms as said (A.I., S.Q.L.), write numbers as words, write 'Microsoft 365' not 'M365'. Never strand one word at the end of a sentence. Keep interjections plain ('Oh!' not 'Ooh!')."
+    },
+    "kokoro": {
+      "name": "Kokoro-82M (hexgrad) via kokoro-onnx",
+      "repo": "https://github.com/hexgrad/kokoro",
+      "runtime": "offline CPU (tts-venv), ~1 s per line",
+      "install": "pip install kokoro-onnx soundfile; download kokoro-v1.0.onnx + voices-v1.0.bin from https://github.com/thewh1teagle/kokoro-onnx/releases into ~/tts-models/kokoro",
+      "licence": "Apache-2.0 (code and weights); kokoro-onnx MIT",
+      "speed": "fast",
+      "prompt": "Engine: Kokoro-82M (offline, Apache-2.0). Very natural for its size, but prosody resets every sentence, so keep each clip to one to three short sentences (under ~30 words). It reads punctuation for pauses ('...' and ','); it does not do emotion on request, so put the feeling in the words. Spell out numbers, acronyms (A.I.) and brand names. Option speed (0.8-1.2, default 1.0) instead of rate; slow the narrator to 0.92-0.95."
+    },
+    "piper": {
+      "name": "Piper (Open Home Foundation)",
+      "repo": "https://github.com/OHF-Voice/piper1-gpl",
+      "runtime": "offline CPU (tts-venv), real-time on a Raspberry Pi",
+      "install": "pip install piper-tts; voices from https://huggingface.co/rhasspy/piper-voices into ~/tts-models/piper (<name>.onnx + .onnx.json)",
+      "licence": "code GPL-3.0; each voice has its own dataset licence (see the voice entry)",
+      "speed": "very fast",
+      "prompt": "Engine: Piper (offline, very fast). Clear but fairly even, 'smart speaker' delivery with little emotion, so it suits announcements, instructions, sat-nav and in-world devices more than drama. Use short declarative sentences and commas for breath. Spell out numbers and acronyms. Option length_scale (>1 slower, e.g. 1.1 for a calmer read)."
+    },
+    "kitten": {
+      "name": "Kitten TTS nano (KittenML)",
+      "repo": "https://github.com/KittenML/KittenTTS",
+      "runtime": "offline CPU (tts-venv), model under 25 MB",
+      "install": "pip install kittentts espeakng-loader (wheel from the GitHub releases)",
+      "licence": "Apache-2.0",
+      "speed": "fast",
+      "prompt": "Engine: Kitten TTS nano (tiny, offline). Slightly synthetic, gadget-like read - good for robots, apps, toys and side characters, not for the main narrator. It garbles one- and two-word inputs: every clip needs at least four words ('Okay, here we go.' not 'Okay!'). Keep lines short and plain; no unusual names."
+    },
+    "supertonic": {
+      "name": "Supertonic (Supertone)",
+      "repo": "https://github.com/supertone-oss-archive/supertonic",
+      "runtime": "offline CPU (tts-venv), extremely fast, 31 languages",
+      "install": "pip install supertonic",
+      "licence": "code MIT; model OpenRAIL-M (commercial use allowed with use-based restrictions)",
+      "speed": "extremely fast",
+      "prompt": "Engine: Supertonic (offline, 31 languages). Crisp, quick, slightly upbeat delivery. Great for multilingual lines: set lang (en, es, de, fr, ko, ja, ...) and write the line in that language. Keep sentences short; it handles numbers but spell out brand names. Pace with commas and full stops rather than long ellipses."
+    },
+    "pocket": {
+      "name": "Pocket TTS (Kyutai)",
+      "repo": "https://github.com/kyutai-labs/pocket-tts",
+      "runtime": "offline CPU (tts-venv), faster than real time",
+      "install": "pip install pocket-tts",
+      "licence": "code MIT; model CC BY 4.0 (credit Kyutai); voices: see the voice entry",
+      "speed": "fast (first load downloads the model)",
+      "prompt": "Engine: Pocket TTS by Kyutai (offline). Conversational and expressive, with natural breaths - the best free choice for characters talking to each other. Write lines the way people speak: contractions, short sentences, the odd 'Well,' or 'Right,'. Very short clips (one word) can come out clipped, so give each clip at least a short phrase. Credit 'Pocket TTS by Kyutai (CC BY 4.0)' in the description."
+    },
+    "chatterbox": {
+      "name": "Chatterbox (Resemble AI)",
+      "repo": "https://github.com/resemble-ai/chatterbox",
+      "runtime": "offline CPU (cb-venv, own Python), slow: ~20 s to load, ~15-20 s per line",
+      "install": "separate venv: python -m venv ~/cb-venv; ~/cb-venv/Scripts/pip install chatterbox-tts (or set CHATTERBOX_PY)",
+      "licence": "MIT (code and weights); outputs carry a Perth watermark where the native watermarker is available",
+      "speed": "slow - use for a few hero lines",
+      "prompt": "Engine: Chatterbox by Resemble AI (offline, slow). The only free engine here with an emotion dial: exaggeration 0.25 = calm and measured, 0.5 = natural, 1.0-1.3 = very excited; lower cfg_weight (0.3) speeds it up and makes it more animated. Mark each line's emotion in the script and keep lines under ~25 words. It renders ~15-20 s per line on this laptop, so use it for a handful of hero lines, not a whole narration."
+    },
+    "sapi": {
+      "name": "Windows SAPI desktop voices",
+      "repo": "https://learn.microsoft.com/dotnet/api/system.speech.synthesis.speechsynthesizer",
+      "runtime": "built into Windows, offline, instant",
+      "install": "nothing - ships with Windows (extra languages via Settings > Time & language > Speech)",
+      "licence": "Windows licence",
+      "speed": "instant",
+      "prompt": "Engine: Windows SAPI desktop voice (built in, offline). Deliberately robotic, early-2000s computer sound - use it as a joke or in-world machine (the old PC, a BSOD, a 'system announcement', a sat-nav), never as the main narrator. Short, flat sentences; spell everything out (numbers, A.I., Microsoft 365). Option rate (-10 to 10, default 0)."
+    }
+  },
+  "voices": {
+    "edge:andrew":   {"engine": "edge", "voice": "en-US-AndrewMultilingualNeural", "opts": {"rate": "-4%", "pitch": "+0Hz"}, "accent": "US", "gender": "male", "character": "warm, neutral house narrator", "best_for": "narrator, docs, demos", "licence": "Microsoft service terms", "commercial": "check", "prompt": "Warm, trustworthy house narrator. Default pace -4%; trailer read -4%/-2Hz. Keep one narrator for the whole piece."},
+    "edge:ava":      {"engine": "edge", "voice": "en-US-AvaMultilingualNeural", "opts": {"rate": "-4%", "pitch": "+0Hz"}, "accent": "US", "gender": "female", "character": "bright, friendly", "best_for": "female narrator, heroine (Sofia)", "licence": "Microsoft service terms", "commercial": "check", "prompt": "Bright, friendly and clear. Works as narrator or heroine; give her lines in the first person with feeling in the words ('Okay... I've got this.')."},
+    "edge:emma":     {"engine": "edge", "voice": "en-US-EmmaMultilingualNeural", "opts": {"rate": "+2%", "pitch": "+0Hz"}, "accent": "US", "gender": "female", "character": "upbeat, ad read", "best_for": "product promo, colleague", "licence": "Microsoft service terms", "commercial": "check", "prompt": "Upbeat ad-read energy. Short punchy sentences, a benefit per line."},
+    "edge:brian":    {"engine": "edge", "voice": "en-US-BrianMultilingualNeural", "opts": {"rate": "+0%", "pitch": "+0Hz"}, "accent": "US", "gender": "male", "character": "casual, youthful", "best_for": "colleague, side character", "licence": "Microsoft service terms", "commercial": "check", "prompt": "Casual, relaxed colleague. Conversational phrasing, contractions."},
+    "edge:ryan-gb":  {"engine": "edge", "voice": "en-GB-RyanNeural", "opts": {"rate": "+0%", "pitch": "+0Hz"}, "accent": "GB", "gender": "male", "character": "brisk British", "best_for": "British colleague", "licence": "Microsoft service terms", "commercial": "check", "prompt": "Brisk, friendly British male. British spelling and idiom read naturally."},
+    "edge:wizard":   {"engine": "edge", "voice": "en-GB-ThomasNeural", "opts": {"rate": "-22%", "pitch": "-14Hz"}, "accent": "GB", "gender": "male", "character": "old wizard, slow and grave", "best_for": "wise mentor", "licence": "Microsoft service terms", "commercial": "check", "prompt": "Slow, grave mentor. Use '...' before the reveal word; pair with the 'wizard' FX chain (low shelf + hall reverb)."},
+    "edge:darklord": {"engine": "edge", "voice": "en-US-ChristopherNeural", "opts": {"rate": "-12%", "pitch": "-24Hz"}, "accent": "US", "gender": "male", "character": "deep villain", "best_for": "villain, menace", "licence": "Microsoft service terms", "commercial": "check", "prompt": "Deep, measured villain. Short menacing sentences; pair with the 'vader' FX chain and keep its 2.8 kHz presence boost for intelligibility."},
+
+    "kokoro:af_heart":    {"engine": "kokoro", "voice": "af_heart", "opts": {}, "accent": "US", "gender": "female", "character": "warm, natural (Kokoro's best voice, grade A)", "best_for": "narrator, heroine", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Kokoro's most natural voice: warm and smooth. A strong free, offline narrator. Keep clips to one to three sentences."},
+    "kokoro:af_bella":    {"engine": "kokoro", "voice": "af_bella", "opts": {}, "accent": "US", "gender": "female", "character": "energetic, youthful (grade A-)", "best_for": "upbeat host, heroine", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Energetic and youthful. Good for an upbeat host; exclamation marks lift the read."},
+    "kokoro:af_nicole":   {"engine": "kokoro", "voice": "af_nicole", "opts": {}, "accent": "US", "gender": "female", "character": "soft, breathy, close-mic", "best_for": "intimate aside, ASMR, thought bubble", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Soft, breathy, close-mic delivery. Use for inner thoughts or a daydream aside, not for the main narration."},
+    "kokoro:am_michael":  {"engine": "kokoro", "voice": "am_michael", "opts": {}, "accent": "US", "gender": "male", "character": "steady US male", "best_for": "narrator, explainer", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Steady, plain US male. A good neutral explainer narrator at speed 0.95."},
+    "kokoro:am_puck":     {"engine": "kokoro", "voice": "am_puck", "opts": {}, "accent": "US", "gender": "male", "character": "playful, cheeky", "best_for": "sidekick, mascot", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Playful, cheeky sidekick. Give him quips and short reactions (at least a short phrase each)."},
+    "kokoro:am_fenrir":   {"engine": "kokoro", "voice": "am_fenrir", "opts": {}, "accent": "US", "gender": "male", "character": "deeper, gruff", "best_for": "tough guy, rival", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Deeper, gruffer male. Blunt short sentences; works as a rival or grizzled expert."},
+    "kokoro:bm_george":   {"engine": "kokoro", "voice": "bm_george", "opts": {}, "accent": "GB", "gender": "male", "character": "mature British, documentary", "best_for": "documentary / nature-doc narrator", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Mature British documentary narrator. Measured, slightly formal phrasing ('And here, at last, ...'); speed 0.92-0.95 with '...' before reveals."},
+    "kokoro:bm_fable":    {"engine": "kokoro", "voice": "bm_fable", "opts": {}, "accent": "GB", "gender": "male", "character": "storyteller British", "best_for": "storybook, fairy tale, mentor", "licence": "Apache-2.0", "commercial": "yes", "prompt": "British storyteller. Write in a 'once upon a time' cadence with ellipses on the turns."},
+    "kokoro:bm_lewis":    {"engine": "kokoro", "voice": "bm_lewis", "opts": {}, "accent": "GB", "gender": "male", "character": "low, serious British", "best_for": "serious aside, villain-lite", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Low, serious British male. Short weighty sentences."},
+    "kokoro:bf_emma":     {"engine": "kokoro", "voice": "bf_emma", "opts": {}, "accent": "GB", "gender": "female", "character": "clear British female", "best_for": "British narrator, presenter", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Clear, composed British female presenter. British spelling and idiom."},
+    "kokoro:bf_isabella": {"engine": "kokoro", "voice": "bf_isabella", "opts": {}, "accent": "GB", "gender": "female", "character": "lively British female", "best_for": "British colleague", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Lively British colleague. Conversational lines with contractions."},
+    "kokoro:ff_siwis":    {"engine": "kokoro", "voice": "ff_siwis", "opts": {"lang": "fr-fr"}, "accent": "FR", "gender": "female", "character": "French female", "best_for": "French lines", "licence": "Apache-2.0", "commercial": "yes", "prompt": "French female. Write the line in French; keep English brand names to a minimum."},
+    "kokoro:ef_dora":     {"engine": "kokoro", "voice": "ef_dora", "opts": {"lang": "es"}, "accent": "ES", "gender": "female", "character": "Spanish female", "best_for": "Spanish lines", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Spanish female. Write the line in Spanish."},
+
+    "piper:alan":     {"engine": "piper", "voice": "en_GB-alan-medium", "opts": {}, "accent": "GB (Scottish-leaning)", "gender": "male", "character": "plain British male", "best_for": "announcer, device", "licence": "unverified - see the model card", "commercial": "check", "prompt": "Plain British male announcer. Use for in-world announcements and devices."},
+    "piper:northern": {"engine": "piper", "voice": "en_GB-northern_english_male-medium", "opts": {}, "accent": "GB northern", "gender": "male", "character": "northern English male", "best_for": "regional character, down-to-earth colleague", "licence": "CC BY-SA 4.0 (OpenSLR 83) - credit required", "commercial": "yes", "prompt": "Down-to-earth northern English male. Plain, friendly lines; credit 'Piper northern_english_male (OpenSLR 83, CC BY-SA 4.0)'."},
+    "piper:lessac":   {"engine": "piper", "voice": "en_US-lessac-high", "opts": {}, "accent": "US", "gender": "female", "character": "clear US female, audiobook-style", "best_for": "instructions, tutorial", "licence": "Blizzard 2013 research licence", "commercial": "no", "prompt": "Clear US female instruction voice. Step-by-step lines; internal/non-commercial use only."},
+    "piper:ryan":     {"engine": "piper", "voice": "en_US-ryan-high", "opts": {}, "accent": "US", "gender": "male", "character": "clear US male", "best_for": "instructions, announcer", "licence": "CC BY-NC-SA 4.0", "commercial": "no", "prompt": "Clear US male announcer. Non-commercial only (CC BY-NC-SA)."},
+
+    "kitten:4-f": {"engine": "kitten", "voice": "expr-voice-4-f", "opts": {}, "accent": "US", "gender": "female", "character": "light, gadget-like female", "best_for": "app or assistant voice, robot", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Light, slightly synthetic female - an app or smart device talking. At least four words per clip."},
+    "kitten:3-m": {"engine": "kitten", "voice": "expr-voice-3-m", "opts": {}, "accent": "US", "gender": "male", "character": "light male", "best_for": "robot, toy, side character", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Light synthetic male - a toy or robot sidekick. At least four words per clip."},
+    "kitten:5-m": {"engine": "kitten", "voice": "expr-voice-5-m", "opts": {}, "accent": "US", "gender": "male", "character": "brighter male", "best_for": "robot, mascot", "licence": "Apache-2.0", "commercial": "yes", "prompt": "Brighter synthetic male - an eager robot mascot. At least four words per clip."},
+
+    "supertonic:M1": {"engine": "supertonic", "voice": "M1", "opts": {"lang": "en"}, "accent": "multilingual", "gender": "male", "character": "crisp male", "best_for": "multilingual narrator, quick promo", "licence": "MIT code / OpenRAIL-M model", "commercial": "yes", "prompt": "Crisp male, quick delivery. Ideal when the same line is needed in several languages (set lang per line)."},
+    "supertonic:M3": {"engine": "supertonic", "voice": "M3", "opts": {"lang": "en"}, "accent": "multilingual", "gender": "male", "character": "deeper male", "best_for": "multilingual character", "licence": "MIT code / OpenRAIL-M model", "commercial": "yes", "prompt": "Deeper male. Set lang per line for non-English."},
+    "supertonic:F1": {"engine": "supertonic", "voice": "F1", "opts": {"lang": "en"}, "accent": "multilingual", "gender": "female", "character": "clear female", "best_for": "multilingual narrator", "licence": "MIT code / OpenRAIL-M model", "commercial": "yes", "prompt": "Clear female. Set lang per line for non-English."},
+    "supertonic:F2": {"engine": "supertonic", "voice": "F2", "opts": {"lang": "en"}, "accent": "multilingual", "gender": "female", "character": "bright female", "best_for": "upbeat promo, multilingual", "licence": "MIT code / OpenRAIL-M model", "commercial": "yes", "prompt": "Bright, upbeat female. Short exclamatory lines work well."},
+
+    "pocket:alba":   {"engine": "pocket", "voice": "alba", "opts": {}, "accent": "US", "gender": "female", "character": "natural, conversational female", "best_for": "heroine, dialogue", "licence": "CC BY 4.0 (voice and model) - credit Kyutai", "commercial": "yes", "prompt": "Natural, conversational female with real breaths. Best for a heroine talking to colleagues."},
+    "pocket:javert": {"engine": "pocket", "voice": "javert", "opts": {}, "accent": "US", "gender": "male", "character": "natural, conversational male", "best_for": "colleague, dialogue, casual narrator", "licence": "CC0 voice / CC BY 4.0 model - credit Kyutai", "commercial": "yes", "prompt": "Natural, conversational male. Casual narrator or colleague; contractions and short sentences."},
+    "pocket:marius": {"engine": "pocket", "voice": "marius", "opts": {}, "accent": "US", "gender": "male", "character": "younger male", "best_for": "side character", "licence": "voice unverified / CC BY 4.0 model", "commercial": "check", "prompt": "Younger male side character. Check the voice licence before publishing."},
+
+    "chatterbox:calm":    {"engine": "chatterbox", "voice": "default", "opts": {"exaggeration": 0.25, "cfg_weight": 0.5}, "accent": "US", "gender": "female", "character": "calm, measured", "best_for": "reassuring hero line", "licence": "MIT", "commercial": "yes", "prompt": "Calm, measured, reassuring read (exaggeration 0.25)."},
+    "chatterbox:excited": {"engine": "chatterbox", "voice": "default", "opts": {"exaggeration": 1.3, "cfg_weight": 0.3}, "accent": "US", "gender": "female", "character": "very excited", "best_for": "hype moment, big reveal", "licence": "MIT", "commercial": "yes", "prompt": "Over-the-top excited (exaggeration 1.3, cfg_weight 0.3). Use for one hype moment; write it with exclamation marks and repetition ('really, really')."},
+    "chatterbox:clone":   {"engine": "chatterbox", "voice": "clone", "opts": {"exaggeration": 0.45, "cfg_weight": 0.5}, "accent": "from the reference", "gender": "from the reference", "character": "clones a 5-10 s reference clip", "best_for": "matching a real narrator", "licence": "MIT - consent of the cloned speaker required", "commercial": "yes", "needs": "ref", "prompt": "Voice clone of the reference clip (pass ref='path/to/clean_5-10s.wav'). Only clone a voice you have permission to use, and say so in the credits."},
+
+    "sapi:david": {"engine": "sapi", "voice": "Microsoft David Desktop", "opts": {}, "accent": "US", "gender": "male", "character": "classic robotic Windows male", "best_for": "old PC, BSOD gag, system voice", "licence": "Windows licence", "commercial": "check", "prompt": "Classic robotic Windows voice - the old PC or 'system' talking. Flat, literal lines."},
+    "sapi:zira":  {"engine": "sapi", "voice": "Microsoft Zira Desktop", "opts": {}, "accent": "US", "gender": "female", "character": "classic robotic Windows female", "best_for": "sat-nav, announcement gag", "licence": "Windows licence", "commercial": "check", "prompt": "Robotic Windows female - a sat-nav or tannoy gag. Flat, literal lines."},
+    "sapi:hazel": {"engine": "sapi", "voice": "Microsoft Hazel Desktop", "opts": {}, "accent": "GB", "gender": "female", "character": "robotic British female", "best_for": "British system voice gag", "licence": "Windows licence", "commercial": "check", "prompt": "Robotic British female system voice. Flat, literal lines."}
+  }
+}

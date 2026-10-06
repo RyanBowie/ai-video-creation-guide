@@ -428,3 +428,7 @@ The same shape works for any "hero is overwhelmed → allies level up → quest 
 ## Attribution
 
 The cel core (`retro.js` primitives), the `head80` anime head, the CRT pass (`post.js`) and the pixel font are adapted from **lemomo-ai/lemo-opuscar** (MIT, © 2026 LemoLab). Ship `THIRD_PARTY_NOTICES.md`. No upstream art, fonts, music or voices are used; all characters, scenes, score and SFX are original.
+
+## Free voices
+
+Free local voices: `LINES` in `make_voice.py` also accepts a catalogue ID (`"kokoro:bm_george"` or `{"id": "piper:alan", ...}`) from the **tts-voiceover** skill's `free_tts` picker. When the user picks one, append `free_tts.py --prompt <id>` output to the project's PROMPT.md under `## Voice notes` and write the lines to it.

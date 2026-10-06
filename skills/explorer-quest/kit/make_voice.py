@@ -1,9 +1,15 @@
 """Generates voice.js (voiceover clips, base64 MP3) + voice_timing.js/.json (word timings) for sofia-explorer.html.
 Usage:  python make_voice.py [key ...]   (needs: pip install --user edge-tts)
         With keys, only those clips are regenerated and merged into the existing voice.js.
+Voices: an edge-tts dict, or a free local voice from the tts-voiceover catalogue as an ID ("kokoro:bm_george")
+or {"id": ..., options}. List them: python ~/.copilot/skills/tts-voiceover/free_tts/free_tts.py --list
 """
-import asyncio, base64, json, pathlib
+import asyncio, base64, json, pathlib, sys
 import edge_tts
+
+FREE_TTS = pathlib.Path.home() / ".copilot/skills/tts-voiceover/free_tts"
+def is_free(voice):  # catalogue ID or {"id": ...}; plain edge-tts dicts have "voice" instead
+    return isinstance(voice, str) or "id" in voice
 
 # adventure-trailer narrator: the house narrator, a touch slower and lower than the retro cut
 NARR = dict(voice="en-US-AndrewMultilingualNeural", rate="-4%", pitch="-2Hz")
@@ -36,8 +42,17 @@ async def main():
             raise SystemExit(f"unknown key(s) {bad}; choose from {list(LINES)}")
         clips = json.loads(here.with_name("voice.js").read_text(encoding="utf-8")[len("window.VOICE = "):].rstrip().rstrip(";"))
         timing = json.loads(here.with_name("voice_timing.json").read_text(encoding="utf-8"))
-    for key, (voice, text) in LINES.items():
-        if only and key not in only:
+    todo = {k: v for k, v in LINES.items() if not only or k in only}
+    free = {k: v for k, v in todo.items() if is_free(v[0])}
+    if free:  # free local voices render in one batch per engine
+        sys.path.insert(0, str(FREE_TTS))
+        import free_tts
+        for key, r in free_tts.render(free, bitrate="48k", sr=24000).items():
+            clips[key] = base64.b64encode(r["mp3"]).decode()
+            timing[key] = {"dur": r["dur"], "words": r["words"]}
+            print(f"{key:8} {r['dur']:5.2f}s  [{r['id']}]  " + " ".join(f"{w}@{int(o * 30)}" for o, w in r["words"]))
+    for key, (voice, text) in todo.items():
+        if key in free:
             continue
         # the online service occasionally truncates a clip, so keep the longest of three takes
         takes = [await tts(voice, text) for _ in range(3)]

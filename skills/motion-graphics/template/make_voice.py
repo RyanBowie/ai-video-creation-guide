@@ -3,6 +3,11 @@
 Usage:  python make_voice.py [key ...]   (needs: pip install --user edge-tts)
         With keys, only those clips are regenerated and merged into the existing voice.js.
 Edit LINES below to change the script or voices, then re-run and refresh the page.
+
+Voices: an edge-tts dict (below), or a free local voice from the tts-voiceover catalogue given as an ID string
+("kokoro:bm_george", "piper:alan", "chatterbox:excited", ...) or a dict with "id" plus options
+({"id": "kokoro:bm_george", "speed": 0.93}). List them: python ~/.copilot/skills/tts-voiceover/free_tts/free_tts.py --list
+Free voices render offline in their own venvs and are timed with faster-whisper; edge and free voices can be mixed.
 """
 import asyncio, base64, json, pathlib, sys
 import edge_tts
@@ -10,6 +15,11 @@ import edge_tts
 NARRATOR = dict(voice="en-US-AndrewMultilingualNeural", rate="-4%", pitch="+0Hz")
 GANDALF = dict(voice="en-GB-ThomasNeural", rate="-22%", pitch="-14Hz")
 VADER = dict(voice="en-US-ChristopherNeural", rate="-12%", pitch="-24Hz")
+# e.g. GANDALF = "kokoro:bm_george"  or  {"id": "chatterbox:clone", "ref": "my_voice.wav"}
+
+FREE_TTS = pathlib.Path.home() / ".copilot/skills/tts-voiceover/free_tts"
+def is_free(voice):  # catalogue ID or {"id": ...}; plain edge-tts dicts have "voice" instead
+    return isinstance(voice, str) or "id" in voice
 
 LINES = {
     "intro":   (NARRATOR, "Copilot. A short story about A.I., and imagination."),
@@ -41,8 +51,17 @@ async def main():
             raise SystemExit(f"unknown key(s) {bad}; choose from {list(LINES)}")
         clips = json.loads(here.with_name("voice.js").read_text(encoding="utf-8")[len("window.VOICE = "):].rstrip().rstrip(";"))
         timing = json.loads(here.with_name("voice_timing.json").read_text(encoding="utf-8"))
-    for key, (voice, text) in LINES.items():
-        if only and key not in only:
+    todo = {k: v for k, v in LINES.items() if not only or k in only}
+    free = {k: v for k, v in todo.items() if is_free(v[0])}
+    if free:  # free local voices render in one batch per engine
+        sys.path.insert(0, str(FREE_TTS))
+        import free_tts
+        for key, r in free_tts.render(free, bitrate="48k", sr=24000).items():
+            clips[key] = base64.b64encode(r["mp3"]).decode()
+            timing[key] = {"dur": r["dur"], "words": r["words"]}
+            print(f"{key:8} {r['dur']:5.2f}s  [{r['id']}]  " + " ".join(f"{w}@{int(o * 30)}" for o, w in r["words"]))
+    for key, (voice, text) in todo.items():
+        if key in free:
             continue
         # the online service occasionally truncates a clip, so keep the longest of three takes
         takes = [await tts(voice, text) for _ in range(3)]

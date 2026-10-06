@@ -63,7 +63,7 @@ Copy-Item .\skills\* "$env:USERPROFILE\.copilot\skills\" -Recurse -Force
 | `retro-anime` | 90s cel-anime / arcade / visual-novel look with a CRT pass (the Sofia Retro engine). |
 | `explorer-quest` | Vintage explorer / adventure-serial look with a 16 mm film pass and a parchment world map (the Sofia Explorer engine). |
 | `paper-cutout` | Paper-cutout / Paper Mario-style paper theatre with torn edges, sticker lettering, card flips and a turn-based RPG battle kit (the Paper Copilot engine). |
-| `tts-voiceover` | Voiceover with Edge neural voices and word timings. |
+| `tts-voiceover` | Voiceover with word timings, plus a voice picker for 40 free local voices (Kokoro, Piper, Kitten TTS, Supertonic, Pocket TTS, Chatterbox, Edge, Windows SAPI) that adds the chosen voice's notes to your prompt. See [Want narration?](https://ryanbowie.github.io/ai-video-creation-guide/#narration) |
 | `audio-edit` | Cutting and fading songs and voiceover without clicks, and keeping the animation in sync. |
 | `av-sync` | Checking that visuals line up with the voiceover, SFX and beats. |
 

@@ -264,6 +264,10 @@ least 4 s, and make a review cut first.
 - `functools.partial(SimpleHTTPRequestHandler, directory=...)` can't be quietened by assigning `.log_message` to the
   partial (the attribute lands on the partial, not the class). Subclass the handler and pass `directory` in `__init__`.
 
+## Free voices
+
+Free local voices: `LINES` in `make_voice.py` also accepts a catalogue ID (`"kokoro:bm_george"` or `{"id": "piper:alan", ...}`) from the **tts-voiceover** skill's `free_tts` picker. When the user picks one, append `free_tts.py --prompt <id>` output to the project's PROMPT.md under `## Voice notes` and write the lines to it.
+
 ## Sync check
 
 Before export (and after any retime or audio edit) run the **av-sync** skill: `python "$env:USERPROFILE\.copilot\skills\av-sync\av_check.py" <video>.html`. It checks VO fit, SFX-on-impact, beats, lyric splices and clipping against these rules and prints frame-exact fixes.

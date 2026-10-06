@@ -59,6 +59,9 @@ Paste any of these at the end of the prompt.
   `Before exporting, take a contact sheet of stills and check each scene against the brief. Rework anything that isn't up to the quality bar.`
 - **Check the sync:**
   `Run the av-sync checker on the final MP4 and fix any FAIL findings.`
+- **Pick the narrator** (needs the skills installed). Watch [Eight free AI voices, one sentence](../docs/media/voice-showcase.mp4) first, choose a voice ID from [voices.json](../skills/tts-voiceover/free_tts/voices.json) and check its licence in the [voice table](https://ryanbowie.github.io/ai-video-creation-guide/#narration):
+  `Narration: use kokoro:bm_george for the narrator. Use the tts-voiceover skill. Run python ~/.copilot/skills/tts-voiceover/free_tts/free_tts.py --prompt followed by that voice ID, and add the voice notes it prints to this prompt and to the project's PROMPT.md. Write every narrator line to those notes, set that voice in make_voice.py, and put its credit line on the end card. If the engine isn't installed, run free_tts.py --doctor and install what it lists.`
+  To voice other characters, add for example `Use kokoro:bf_emma for Sofia and edge:wizard for the wizard.`
 
 ## Tips
 

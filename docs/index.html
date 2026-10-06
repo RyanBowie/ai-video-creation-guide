@@ -296,6 +296,7 @@ table.wrap-head thead th { white-space: normal; }
   table.stack tbody tr > * { padding: 4px 0; border-bottom: 0; overflow-wrap: break-word; }
   table.stack tbody tr > :first-child { padding-top: 0; font-weight: 600; }
   table.stack td[data-label]::before { content: attr(data-label); content: attr(data-label) / ""; display: block; color: var(--cp-text-muted); font-size: 0.8rem; font-weight: 600; }
+  table.stack caption { display: block; }
   table.stack td:empty { display: none; }
   table.stack tr.is-relevant { background: var(--cp-highlight); }
   table.stack tr.is-relevant > * { background: transparent; }
@@ -682,6 +683,36 @@ Feel free to get creative with this design: cool animations, characters, whateve
 
 Take your time with the generation. Think creatively and make this something really new and fresh.</code><button type="button" class="btn btn-sm copy-btn" data-copy-target="prompt-text" data-jsonly hidden>Copy</button></div>
       <p class="small muted">Also in the repo as <a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/prompts/template-prompt.md">prompts/template-prompt.md</a>.</p>
+      <h3 id="narration">Want narration?</h3>
+      <p>The starter prompt lets Copilot pick a voice. To choose the narrator yourself, add the box below after the prompt. Every voice runs free on your own laptop, with no account or API key.</p>
+      <div class="callout callout-accent" role="note">
+        <p class="callout-title"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v3M8 21h8"/></svg>Hear the voices first</p>
+        <p>Watch <a href="#voice-showcase">Eight free AI voices, one sentence</a> to hear each engine, then pick a voice ID from the table. The full list of 40 voices, with style notes, is in <a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/skills/tts-voiceover/free_tts/voices.json">voices.json</a>, and the model links and licences are in the video&#39;s <a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/voice-showcase/THIRD_PARTY_NOTICES.md">third-party notices</a>.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <caption class="small muted">Free voice engines, example voice IDs and licences. Check the licence before you publish.</caption>
+          <thead><tr><th scope="col">Engine</th><th scope="col">Example voice IDs</th><th scope="col">Licence</th><th scope="col">Using it in your video</th></tr></thead>
+          <tbody>
+            <tr><th scope="row"><a href="https://github.com/hexgrad/kokoro">Kokoro-82M</a></th><td><code>kokoro:bm_george</code>, <code>kokoro:af_heart</code>, <code>kokoro:bf_emma</code></td><td>Apache-2.0</td><td>Best all-rounder. Fine for commercial use.</td></tr>
+            <tr><th scope="row"><a href="https://github.com/KittenML/KittenTTS">Kitten TTS</a></th><td><code>kitten:4-f</code>, <code>kitten:5-m</code></td><td>Apache-2.0</td><td>Tiny and fast. Fine for commercial use.</td></tr>
+            <tr><th scope="row"><a href="https://github.com/supertone-oss-archive/supertonic">Supertonic</a></th><td><code>supertonic:M1</code>, <code>supertonic:F1</code></td><td>MIT code, OpenRAIL-M model</td><td>Commercial use allowed within the OpenRAIL-M use restrictions.</td></tr>
+            <tr><th scope="row"><a href="https://github.com/kyutai-labs/pocket-tts">Pocket TTS</a></th><td><code>pocket:alba</code>, <code>pocket:javert</code></td><td>MIT code, CC BY 4.0 model</td><td>Credit Kyutai in the video or description.</td></tr>
+            <tr><th scope="row"><a href="https://github.com/resemble-ai/chatterbox">Chatterbox</a></th><td><code>chatterbox:calm</code>, <code>chatterbox:excited</code></td><td>MIT</td><td>Adds an inaudible Perth watermark. Only clone a voice with the speaker&#39;s consent.</td></tr>
+            <tr><th scope="row"><a href="https://github.com/OHF-Voice/piper1-gpl">Piper</a></th><td><code>piper:alan</code>, <code>piper:northern</code></td><td>GPL-3.0 code, licence per voice</td><td>Check each voice&#39;s model card: some need credit (CC BY-SA), <code>piper:ryan</code> is non-commercial.</td></tr>
+            <tr><th scope="row"><a href="https://github.com/rany2/edge-tts">Edge neural voices</a></th><td><code>edge:andrew</code>, <code>edge:ava</code>, <code>edge:wizard</code></td><td>LGPL-3.0 code, Microsoft service terms for voices</td><td>Uses an unofficial online endpoint. For paid or client work, use <a href="https://learn.microsoft.com/azure/ai-services/speech-service/">Azure AI Speech</a> instead.</td></tr>
+            <tr><th scope="row">Windows SAPI</th><td><code>sapi:david</code>, <code>sapi:zira</code></td><td>Windows licence</td><td>Built in and offline, but robotic. Good for a retro computer voice.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="code-box prompt-box"><code id="narration-prompt">Narration: use <mark>[kokoro:bm_george]</mark> for the narrator.
+<span class="ph-hint">(Your input: any voice ID from the table, for example kokoro:af_heart or pocket:alba.)</span>
+
+Use the tts-voiceover skill. Run python ~/.copilot/skills/tts-voiceover/free_tts/free_tts.py --prompt followed by that voice ID, and add the voice notes it prints to this prompt and to the project&#39;s PROMPT.md. Write every narrator line to those notes, set that voice in make_voice.py, and put its credit line on the end card. If the engine isn&#39;t installed, run free_tts.py --doctor and install what it lists.
+
+<mark>[Character Voices]</mark>
+<span class="ph-hint">(Your input, optional: other voices for other characters, for example &ldquo;use kokoro:bf_emma for Sofia and edge:wizard for the wizard&rdquo;. Delete this section if you only want a narrator.)</span></code><button type="button" class="btn btn-sm copy-btn" data-copy-target="narration-prompt" data-jsonly hidden>Copy</button></div>
+      <p class="small muted">This needs the <a href="#skills">reusable skills</a> installed. To list voices yourself, run <code>free_tts.py --list</code>, or <code>free_tts.py --list GB</code> to filter.</p>
       <h3>How to add your references</h3>
       <div class="grid-2">
         <div class="card"><p><span class="badge badge-accent">Screenshots</span></p><p>Paste or drag images into the chat with the prompt, then describe them under <strong>[Reference Videos]</strong>, for example &ldquo;the first screenshot: I like the paper texture and soft colours&rdquo;.</p></div>
@@ -732,7 +763,7 @@ Take your time with the generation. Think creatively and make this something rea
             <span class="link-list"><a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/launch-race/PROMPT.md">Prompt</a><a href="https://github.com/RyanBowie/ai-video-creation-guide/tree/main/examples/launch-race">Source</a><a href="media/launch-race.mp4">Download MP4</a></span>
           </figcaption>
         </figure>
-                    <figure class="shot">
+                    <figure class="shot" id="voice-showcase">
                       <video controls preload="none" playsinline width="1280" height="720" poster="media/voice-showcase-poster.jpg" aria-label="Eight free AI voices, one sentence: a relay and roll call of free text-to-speech engines (2 minutes 8 seconds)"><source src="media/voice-showcase.mp4" type="video/mp4"></video>
                       <figcaption><strong>Eight free AI voices, one sentence</strong> – One sentence is passed word by word between eight free text-to-speech engines that run on an ordinary laptop CPU: Windows SAPI, <a href="https://github.com/OHF-Voice/piper1-gpl">Piper</a>, <a href="https://github.com/KittenML/KittenTTS">Kitten TTS</a>, <a href="https://github.com/hexgrad/kokoro">Kokoro-82M</a>, <a href="https://github.com/supertone-oss-archive/supertonic">Supertonic</a>, <a href="https://github.com/kyutai-labs/pocket-tts">Pocket TTS</a>, <a href="https://github.com/resemble-ai/chatterbox">Chatterbox</a> and <a href="https://github.com/rany2/edge-tts">Edge neural voices</a>. A roll call follows, with each engine's size, licence and voices, then a wall of 21 bigger open models that need a GPU. <small>2:08 · SVG motion graphics · 8 free TTS engines</small>
                         <span class="link-list"><a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/voice-showcase/PROMPT.md">Prompt</a><a href="https://github.com/RyanBowie/ai-video-creation-guide/tree/main/examples/voice-showcase">Source</a><a href="https://github.com/RyanBowie/ai-video-creation-guide/blob/main/examples/voice-showcase/THIRD_PARTY_NOTICES.md">Model links and licences</a><a href="media/voice-showcase.mp4">Download MP4</a></span>
@@ -825,7 +856,7 @@ Copy-Item .\skills\* "$env:USERPROFILE\.copilot\skills\" -Recurse -Force</code><
             <tr><th scope="row"><code>retro-anime</code></th><td>A 90s cel-anime, arcade and visual-novel look with a CRT pass. The Sofia Retro engine.</td></tr>
             <tr><th scope="row"><code>explorer-quest</code></th><td>A vintage explorer and adventure-serial look with a 16 mm film pass and a parchment world map. The Sofia Explorer engine.</td></tr>
             <tr><th scope="row"><code>paper-cutout</code></th><td>A paper-cutout, Paper Mario-style paper theatre with torn edges, sticker lettering, card flips and a turn-based RPG battle kit. The Paper Copilot engine.</td></tr>
-            <tr><th scope="row"><code>tts-voiceover</code></th><td>Voiceover with Edge neural voices and word timings.</td></tr>
+            <tr><th scope="row"><code>tts-voiceover</code></th><td>Voiceover with word timings, plus a <a href="#narration">voice picker</a> for 40 free local voices (Kokoro, Piper, Kitten TTS, Supertonic, Pocket TTS, Chatterbox, Edge, Windows SAPI) that adds the chosen voice&#39;s notes to your prompt.</td></tr>
             <tr><th scope="row"><code>audio-edit</code></th><td>Cutting and fading songs and voiceover without clicks, while keeping the animation in sync.</td></tr>
             <tr><th scope="row"><code>av-sync</code></th><td>Checking that the visuals line up with the voiceover, sound effects and beats.</td></tr>
           </tbody>

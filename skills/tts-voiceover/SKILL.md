@@ -1,6 +1,6 @@
 ---
 name: tts-voiceover
-description: Generate natural-sounding narration and character voices offline with edge-tts (no API key, no npm), including voice selection, line writing for pacing, character voice treatments (wizard, dark lord, robot, radio), and packaging clips as MP3 files or a base64 voice.js bundle for the browser. Use when the user asks for a voiceover, narration, spoken audio, an AI voice, a talking character, or wants to add speech to a video, demo recording, deck or web page.
+description: Generate natural-sounding narration and character voices offline with edge-tts (no API key, no npm), plus a catalogue of 40 free local voices (Kokoro, Piper, KittenTTS, Supertonic, Pocket TTS, Chatterbox, Windows SAPI) that the user can pick per video or per character, each with prompt notes that get appended to the video prompt, including voice selection, line writing for pacing, character voice treatments (wizard, dark lord, robot, radio), and packaging clips as MP3 files or a base64 voice.js bundle for the browser. Use when the user asks for a voiceover, narration, spoken audio, an AI voice, a talking character, a specific free or open-source voice ("use Kokoro", "British voice", "use voice X for the narrator"), or wants to add speech to a video, demo recording, deck or web page.
 ---
 
 # TTS Voiceover
@@ -46,6 +46,49 @@ Rules of thumb:
 - Almost always slow the narrator slightly (`-4%` to `-8%`). Default rate reads rushed.
 - Pitch below `-24Hz` starts sounding processed rather than deep — get depth from FX instead.
 - Keep one narrator voice for a whole piece. Switching voices reads as a character change.
+
+## Free local voices (voice picker)
+
+`free_tts/voices.json` is a catalogue of 40 free voices across 8 engines, and `free_tts/free_tts.py` renders them.
+Every `make_voice.py` (motion-graphics template and the retro-anime, explorer-quest and paper-cutout kits) accepts
+a catalogue ID in place of an edge-tts dict, so one video can mix Edge and local voices.
+
+| Engine | GitHub | Licence | Voices |
+|---|---|---|---|
+| edge | https://github.com/rany2/edge-tts | code LGPL-3.0; Microsoft service terms (use Azure AI Speech for paid work) | andrew, ava, emma, brian, ryan-gb, wizard, darklord |
+| kokoro | https://github.com/hexgrad/kokoro | Apache-2.0 | af_heart, af_bella, af_nicole, am_michael, am_puck, am_fenrir, bm_george, bm_fable, bm_lewis, bf_emma, bf_isabella, ff_siwis, ef_dora |
+| piper | https://github.com/OHF-Voice/piper1-gpl | GPL-3.0 code; per-voice dataset licence | alan, northern, lessac, ryan |
+| kitten | https://github.com/KittenML/KittenTTS | Apache-2.0 | 4-f, 3-m, 5-m |
+| supertonic | https://github.com/supertone-oss-archive/supertonic | MIT code; OpenRAIL-M model | M1, M3, F1, F2 |
+| pocket | https://github.com/kyutai-labs/pocket-tts | MIT code; CC BY 4.0 model (credit Kyutai) | alba, javert, marius |
+| chatterbox | https://github.com/resemble-ai/chatterbox | MIT; Perth watermark | calm, excited, clone (needs `ref` WAV) |
+| sapi | Windows built-in | Windows licence | david, zira, hazel |
+
+```powershell
+$ft = "$env:USERPROFILE\.copilot\skills\tts-voiceover\free_tts\free_tts.py"
+python $ft --list british              # filter by engine, accent, gender, mood
+python $ft --prompt kokoro:bm_george   # prompt notes for that voice
+python $ft --say piper:alan "Test line." -o test.mp3   # audition; prints word@frame
+python $ft --doctor                    # which engines/venvs are ready
+```
+
+**When the user picks a voice** ("use kokoro:bm_george for the narrator", "a British wizard voice"):
+1. Resolve it to an ID with `--list <words>`; if several fit, offer 2-3 with `--say` samples.
+2. Run `--prompt <id>` and append the output under a `## Voice notes` heading in the project's `PROMPT.md`
+   (the main video prompt), one block per character voice. It carries the engine rules, line-writing style,
+   options, licence and the credit line.
+3. Write the lines to those rules (e.g. Kokoro: 1-3 short sentences per clip, no emotion tags; Chatterbox:
+   `exaggeration`/`cfg_weight`; Supertonic: punctuation drives pacing).
+4. In `make_voice.py` set the voice: `"b": ("kokoro:bm_george", "...")` or
+   `{"id": "piper:alan", "length_scale": 1.1}` for overrides. Run it as usual; free voices render first in one
+   batch per engine (48k MP3 at 24 kHz, so bytes/6000 ~ seconds still holds) and get `word@frame` from faster-whisper.
+5. Put the voice's credit line in the end card / README.
+
+Notes: engines run in-process if importable, otherwise in `~/tts-venv` (`~/cb-venv` for Chatterbox) via a worker
+subprocess; override with `TTS_PY`, `CHATTERBOX_PY`, `TTS_MODELS`. Chatterbox is slow (~40 s per line on CPU).
+Whisper word timings are reliable for clear voices; on small models (KittenTTS) the recognised words can differ
+from the script, so check pop-in timing by ear. Edge voices stay network-bound and non-deterministic; local voices
+are deterministic.
 
 ## Writing lines for pacing
 
