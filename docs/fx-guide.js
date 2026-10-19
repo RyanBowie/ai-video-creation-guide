@@ -10,6 +10,17 @@
 
   function cssVar(n, fb) { var v = getComputedStyle(root).getPropertyValue(n).trim(); return v || fb; }
 
+  /* "Blank" means the pointer is over the page background or a bare layout container, never over content. */
+  function blank(el) {
+    if (!el || el.nodeType !== 1) return false;
+    if (el === root || el === document.body) return true;
+    var t = el.tagName;
+    if (t !== "MAIN" && t !== "SECTION" && t !== "FOOTER" && t !== "DIV") return false;
+    if (!el.matches("main, .layout, .section, .hero, .site-footer, .dl-series, .dl-others")) return false;
+    for (var n = el.firstChild; n; n = n.nextSibling) if (n.nodeType === 3 && n.nodeValue.trim()) return false;
+    return true;
+  }
+
   /* Interactive dot field: cursor bulge plus click ripples. */
   function dotField(host, opts) {
     opts = opts || {};
@@ -58,9 +69,9 @@
     }
     function kick() { if (!raf && visible && !reduce) raf = requestAnimationFrame(loop); }
     function pos(e) { var r = host.getBoundingClientRect(); mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; }
-    host.addEventListener("pointermove", function (e) { pos(e); mouse.on = true; kick(); });
+    host.addEventListener("pointermove", function (e) { if (!blank(e.target)) { if (mouse.on) { mouse.on = false; kick(); } return; } pos(e); mouse.on = true; kick(); });
     host.addEventListener("pointerleave", function () { mouse.on = false; kick(); });
-    host.addEventListener("pointerdown", function (e) { pos(e); ripples.push({ x: mouse.x, y: mouse.y, t: performance.now() }); kick(); });
+    host.addEventListener("pointerdown", function (e) { if (!blank(e.target)) return; pos(e); ripples.push({ x: mouse.x, y: mouse.y, t: performance.now() }); kick(); });
     window.addEventListener("resize", function () { size(); draw(performance.now()); });
     new IntersectionObserver(function (en) { visible = en[0].isIntersecting; if (visible) kick(); }).observe(host);
     new MutationObserver(function () { colors(); draw(performance.now()); }).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
@@ -72,18 +83,11 @@
   /* Glyph trail: only over empty space, so text stays easy to select and copy. */
   function trail() {
     if (reduce || !fine) return;
-    var SKIP = "header,nav,a,button,input,textarea,select,label,pre,code,summary,video,img,table,svg,figure,details,li,p,h1,h2,h3,h4,.card,.callout,.table-wrap,.diagram-wrap,.dl-signal,.dl-card,.code-box,.prompt-box,.gallery,.shot,.facts,.fx-term,.fx-marquee";
     var colors = ["#c3a0ef", "#f73678", "#ff9d4d", "#69aeff", "#5fed83", "#e6cf3a"], glyphs = "-/).+=><*&(".split("");
     var N = 10, blocks = [], idx = 0, lx = -1, ly = -1;
     for (var i = 0; i < N; i++) { var b = document.createElement("div"); b.className = "fx-trail-block"; b.setAttribute("aria-hidden", "true"); document.body.appendChild(b); blocks.push(b); }
-    function overText(el) {
-      if (!el || !el.closest) return true;
-      if (el.closest(SKIP)) return true;
-      for (var n = el.firstChild; n; n = n.nextSibling) if (n.nodeType === 3 && n.nodeValue.trim()) return true;
-      return false;
-    }
     document.addEventListener("mousemove", function (e) {
-      if (overText(e.target)) return;
+      if (!blank(e.target)) return;
       var x = 20 * Math.floor(e.clientX / 20), y = 20 * Math.floor(e.clientY / 20);
       if (x === lx && y === ly) return;
       lx = x; ly = y; idx = (idx + 1) % N;
