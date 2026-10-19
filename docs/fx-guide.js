@@ -72,7 +72,7 @@
   /* Glyph trail: only over empty space, so text stays easy to select and copy. */
   function trail() {
     if (reduce || !fine) return;
-    var SKIP = "header,nav,a,button,input,textarea,select,label,pre,code,summary,video,img,table,.fx-term,.fx-marquee";
+    var SKIP = "header,nav,a,button,input,textarea,select,label,pre,code,summary,video,img,table,svg,figure,details,li,p,h1,h2,h3,h4,.card,.callout,.table-wrap,.diagram-wrap,.dl-signal,.dl-card,.code-box,.prompt-box,.gallery,.shot,.facts,.fx-term,.fx-marquee";
     var colors = ["#c3a0ef", "#f73678", "#ff9d4d", "#69aeff", "#5fed83", "#e6cf3a"], glyphs = "-/).+=><*&(".split("");
     var N = 10, blocks = [], idx = 0, lx = -1, ly = -1;
     for (var i = 0; i < N; i++) { var b = document.createElement("div"); b.className = "fx-trail-block"; b.setAttribute("aria-hidden", "true"); document.body.appendChild(b); blocks.push(b); }
