@@ -87,7 +87,7 @@
     var N = 10, blocks = [], idx = 0, lx = -1, ly = -1;
     for (var i = 0; i < N; i++) { var b = document.createElement("div"); b.className = "fx-trail-block"; b.setAttribute("aria-hidden", "true"); document.body.appendChild(b); blocks.push(b); }
     document.addEventListener("mousemove", function (e) {
-      if (!blank(e.target)) return;
+      if (!blank(e.target) || e.target.closest(".hero, .site-footer, .fx-field")) return;
       var x = 20 * Math.floor(e.clientX / 20), y = 20 * Math.floor(e.clientY / 20);
       if (x === lx && y === ly) return;
       lx = x; ly = y; idx = (idx + 1) % N;
