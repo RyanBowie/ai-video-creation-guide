@@ -1,0 +1,66 @@
+/* Creative layer for the guide. Original code; colours come from the page's --cp-* variables.
+   Everything here is progressive enhancement: with JS off or reduced motion the page is the plain guide. */
+
+/* Interactive dot field (hero and footer) */
+.fx-field { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; border-radius: inherit; -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent); mask-image: linear-gradient(to bottom, #000 55%, transparent); }
+html.fx-on .hero::before { background-image: none; }
+.site-footer { position: relative; isolation: isolate; overflow: hidden; }
+.site-footer .fx-field { -webkit-mask-image: linear-gradient(to top, #000 40%, transparent); mask-image: linear-gradient(to top, #000 40%, transparent); }
+
+/* Glyph cursor trail, only over empty space */
+.fx-trail-block { position: fixed; left: 0; top: 0; width: 20px; height: 20px; z-index: 70; pointer-events: none; opacity: 0; transition: opacity .25s ease-out; font: 700 13px/20px var(--mono); text-align: center; color: #151515; }
+.fx-trail-block.fx-active { opacity: .95; transition: none; }
+
+/* Nav text decode */
+.fx-dec { position: relative; display: inline-block; }
+.fx-dec .fx-ph { visibility: hidden; }
+.fx-dec .fx-live { position: absolute; inset: 0; white-space: pre; }
+
+/* Typed terminal line in the hero */
+.fx-term { display: flex; align-items: center; gap: 10px; width: fit-content; max-width: 100%; margin: 4px 0 18px; padding: 8px 14px; border: 1px solid var(--cp-border); border-radius: var(--radius); background: color-mix(in srgb, var(--cp-surface) 85%, transparent); font: 600 0.9rem/1.4 var(--mono); color: var(--cp-text-muted); overflow: hidden; }
+.fx-term b { color: var(--cp-accent); }
+.fx-term .fx-t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fx-caret { flex: none; width: .6em; height: 1.05em; background: var(--cp-success); animation: fx-blink 1s steps(1) infinite; }
+@keyframes fx-blink { 50% { opacity: 0; } }
+
+/* Marquee tech band */
+.fx-marquee { position: relative; margin: 36px 0 0; padding: 14px 0; overflow: hidden; border-block: 1px solid var(--cp-border); -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.fx-marquee-track { display: flex; width: max-content; gap: 0; animation: fx-marq 38s linear infinite; }
+.fx-marquee:hover .fx-marquee-track { animation-play-state: paused; }
+.fx-marquee span { padding: 0 22px; font: 800 clamp(1.4rem, 3.4vw, 2.4rem)/1.1 var(--font); letter-spacing: -.01em; white-space: nowrap; color: transparent; -webkit-text-stroke: 1.2px var(--cp-border-strong); }
+.fx-marquee span:nth-child(3n+1) { color: var(--cp-accent); -webkit-text-stroke: 0; }
+.fx-marquee i { align-self: center; font-style: normal; color: var(--cp-chart-magenta); }
+@keyframes fx-marq { to { transform: translateX(-50%); } }
+
+/* Spotlight glow and tilt on cards */
+.fx-spot { position: relative; --mx: 50%; --my: 50%; }
+.fx-spot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .25s; background: radial-gradient(260px circle at var(--mx) var(--my), color-mix(in srgb, var(--cp-accent) 22%, transparent), transparent 70%); }
+.fx-spot.fx-hot::after { opacity: 1; }
+.fx-tilt { transition: transform .2s ease-out, border-color .2s; transform: perspective(700px) rotateX(var(--ry, 0deg)) rotateY(var(--rx, 0deg)); }
+.fx-tilt.fx-hot { transition: transform .06s linear, border-color .2s; }
+.hero .facts li.fx-tilt:hover, .dl-card.fx-tilt:hover { transform: perspective(700px) rotateX(var(--ry, 0deg)) rotateY(var(--rx, 0deg)); }
+
+/* Steps light up as you reach them */
+.steps > li::before { transition: background .4s, color .4s, box-shadow .4s, transform .4s; }
+.steps > li.fx-reached::before { background: var(--cp-accent); color: var(--cp-accent-fg); box-shadow: 0 0 0 5px color-mix(in srgb, var(--cp-accent) 22%, transparent); }
+.steps > li::after { background: linear-gradient(var(--cp-accent) 50%, var(--cp-border) 50%) 0 100% / 100% 200% no-repeat; transition: background-position .8s ease; }
+.steps > li.fx-reached::after { background-position: 0 0; }
+
+/* Section heading underline wipes in */
+.section > h2 { position: relative; width: fit-content; max-width: 100%; }
+.section > h2::after { content: ""; display: block; width: 100%; height: 3px; margin-top: 8px; border-radius: 2px; background: linear-gradient(90deg, var(--cp-chart-blue), var(--cp-chart-purple), var(--cp-chart-magenta)); transform-origin: left; transition: transform .9s cubic-bezier(.2, .7, .2, 1) .2s; }
+html.dl-motion .section.dl-reveal:not(.dl-in) > h2::after { transform: scaleX(0); }
+
+/* Pulses travelling along the hero diagram */
+.fx-pulse { fill: var(--cp-chart-magenta); filter: drop-shadow(0 0 5px var(--cp-chart-magenta)); }
+
+.btn.fx-mag { transition: transform .15s ease-out, background .2s, border-color .2s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fx-marquee-track { animation: none; }
+  .fx-trail-block { display: none; }
+  .fx-pulse { display: none; }
+  .fx-caret { animation: none; }
+}
+@media (forced-colors: active) { .fx-field, .fx-trail-block, .fx-marquee { display: none; } }
+@media print { .fx-field, .fx-trail-block, .fx-marquee, .fx-term, .fx-pulse { display: none !important; } }
